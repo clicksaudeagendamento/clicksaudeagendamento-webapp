@@ -754,7 +754,7 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      <section className="py-12 sm:py-16 bg-gradient-to-br from-primary to-primary/80 text-white">
+      {/* <section className="py-12 sm:py-16 bg-gradient-to-br from-primary to-primary/80 text-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div className="text-center">
@@ -787,7 +787,7 @@ export const LandingPage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <footer className="bg-slate-800 text-white py-10 sm:py-12">
         <div className="container mx-auto px-4">
