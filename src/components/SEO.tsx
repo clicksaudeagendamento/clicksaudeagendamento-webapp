@@ -19,7 +19,7 @@ export const SEO = ({
 }: SEOProps) => {
   const { profile } = useAppointments();
   
-  const defaultTitle = `${profile.name} - ${profile.specialty} | Agendamento Online`;
+  const defaultTitle = `${profile.name}`;
   const defaultDescription = `Agende sua consulta com ${profile.name}, ${profile.specialty} ${profile.register}. Sistema de agendamento online fácil e rápido. ${profile.address}`;
   const defaultKeywords = `${profile.specialty.toLowerCase()}, agendamento, consulta, ${profile.name.toLowerCase()}, médico, saúde, ${profile.register}`;
   const defaultImage = '/placeholder.svg';

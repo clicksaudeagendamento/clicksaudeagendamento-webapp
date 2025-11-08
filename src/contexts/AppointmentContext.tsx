@@ -115,14 +115,14 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
   const [profile, setProfile] = useState<ProfessionalProfile>({
-    name: 'Dr. Maria Silva',
-    specialty: 'Cardiologista',
-    register: 'CRM 12345',
-    address: 'Rua das Flores, 123 - Centro - São Paulo/SP',
-    phone: '(11) 99999-9999',
-    email: 'profissional@email.com.br',
-    workingHours: 'Segunda a Sexta: 8h às 18h',
-    primaryColor: '#3B82F6',
+    name: '',
+    specialty: '',
+    register: '',
+    address: '',
+    phone: '',
+    email: '',
+    workingHours: '',
+    primaryColor: '',
   });
 
   const canEditSchedule = (date: Date): boolean => {
