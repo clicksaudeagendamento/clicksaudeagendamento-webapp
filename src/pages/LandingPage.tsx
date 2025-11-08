@@ -113,7 +113,7 @@ export const LandingPage = () => {
       
       // Redirect to welcome page after 1.5 seconds
       setTimeout(() => {
-        window.location.href = '/welcome';
+        window.location.href = '/boas-vindas';
       }, 1500);
 
     } catch (error) {

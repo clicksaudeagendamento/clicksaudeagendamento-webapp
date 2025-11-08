@@ -20,9 +20,9 @@ function App() {
         <Router>
           <SEO />
           <Routes>
-            <Route path="/login" element={<AdminLoginPage />} />
             <Route path="/" element={<LandingPage />} />
-            <Route path="/welcome" element={<Welcome />} />
+            <Route path="/login" element={<AdminLoginPage />} />
+            <Route path="/boas-vindas" element={<Welcome />} />
             <Route path="/agendamento" element={<Index />} />
             <Route path="/:userId/agendamento" element={<ProfessionalBooking />} />
             <Route path="/profissional/admin" element={<ProfessionalAdmin />} />
