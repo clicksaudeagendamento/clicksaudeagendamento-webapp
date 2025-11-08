@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design system focused on blue, white, and black colors */
+
+@layer base {
+  :root {
+    /* --background: 255 255 255; */
+    --foreground: 15 23 42;
+
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+
+    --popover: 255 255 255;
+    --popover-foreground: 15 23 42;
+
+    --primary: 59 130 246;
+    --primary-foreground: 255 255 255;
+
+    --secondary: 248 250 252;
+    --secondary-foreground: 71 85 105;
+
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
+
+    --accent: 248 250 252;
+    --accent-foreground: 71 85 105;
+
+    --destructive: 239 68 68;
+    --destructive-foreground: 255 255 255;
+
+    --border: 226 232 240;
+    --input: 226 232 240;
+    --ring: 59 130 246;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-primary/20;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Garantir que todos os inputs sejam brancos com placeholder padrão */
+  input, textarea, select {
+    @apply bg-white border-primary/20 text-slate-700;
+  }
+
+  /* Remover destaque de foco nos inputs */
+  input:focus, textarea:focus, select:focus {
+    @apply outline-none ring-1 ring-primary border-primary;
+  }
+
+  /* Todos os botões com fundo branco */
+  button {
+    @apply bg-white;
+  }
+
+  /* Placeholder cor padrão */
+  ::placeholder {
+    @apply text-slate-400;
+  }
+
+  /* Textos padrão */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-slate-800;
+  }
+
+  p, span, div {
+    @apply text-slate-700;
+  }
+}
+
+@layer components {
+  .calendar-day {
+    @apply w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-all duration-200;
+  }
+  
+  .calendar-day-available {
+    @apply hover:bg-green-50 cursor-pointer relative text-green-700;
+  }
+  
+  .calendar-day-selected {
+    @apply bg-green-600 text-white;
+  }
+  
+  .calendar-day-unavailable {
+    @apply text-muted-foreground cursor-not-allowed;
+  }
+  
+  .availability-dot {
+    @apply w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full absolute -bottom-0.5 sm:-bottom-1 left-1/2 transform -translate-x-1/2;
+  }
+
+  .admin-card {
+    @apply bg-white rounded-lg shadow-md p-3 sm:p-4 border border-primary/20;
+  }
+
+  .mobile-button {
+    @apply w-full min-h-[48px] px-4 py-3 text-sm sm:text-base font-medium rounded-lg transition-colors bg-white border-primary/20 text-primary;
+  }
+
+  /* Otimizações para mobile */
+  @media (max-width: 640px) {
+    .container {
+      @apply px-3;
+    }
+    
+    .mobile-button {
+      @apply min-h-[48px] text-base bg-white;
+    }
+    
+    /* Garantir que textos não se sobreponham */
+    .text-responsive {
+      @apply text-sm leading-relaxed;
+    }
+    
+    /* Melhorar espaçamento em telas pequenas */
+    .space-y-mobile > * + * {
+      @apply mt-3;
+    }
+
+    /* Melhorar tipografia mobile */
+    h1, h2, h3 {
+      @apply leading-tight;
+    }
+
+    /* Botões mobile-friendly */
+    button {
+      @apply min-h-[44px] touch-manipulation;
+    }
+
+    /* Formulários mobile */
+    input, textarea, select {
+      @apply min-h-[44px] text-base;
+    }
+
+    /* Navegação mobile */
+    .mobile-nav {
+      @apply fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2;
+    }
+  }
+
+  /* Animações suaves */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
