@@ -834,6 +834,7 @@ export const LandingPage = () => {
 
           <div className="border-t border-slate-700 pt-6 text-center text-xs sm:text-sm text-slate-400">
             <p>© 2025 ClickSaúde Agendamento. Todos os direitos reservados.</p>
+            <p>CNPJ: 39.578.523/0001-55</p>
           </div>
         </div>
       </footer>
