@@ -37,7 +37,7 @@ export const AdminLogin = ({ onLogin, error: externalError }: AdminLoginProps) =
               <Lock className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-800 mb-2">
-              Acesso Administrativo
+              ClickSaúde Agendamento
             </h1>
             <p className="text-slate-600">
               Entre com suas credenciais
