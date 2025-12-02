@@ -6,158 +6,237 @@
 
 @layer base {
   :root {
-    /* --background: 255 255 255; */
+    /* Background & Foreground */
+    --background: 255 255 255;
     --foreground: 15 23 42;
 
+    /* Card */
     --card: 255 255 255;
     --card-foreground: 15 23 42;
 
+    /* Popover */
     --popover: 255 255 255;
     --popover-foreground: 15 23 42;
 
+    /* Primary - Blue */
     --primary: 59 130 246;
     --primary-foreground: 255 255 255;
 
+    /* Secondary - Slate */
     --secondary: 248 250 252;
     --secondary-foreground: 71 85 105;
 
+    /* Muted */
     --muted: 241 245 249;
     --muted-foreground: 100 116 139;
 
+    /* Accent */
     --accent: 248 250 252;
     --accent-foreground: 71 85 105;
 
+    /* Destructive - Red */
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
 
+    /* Success - Green */
+    --success: 16 185 129;
+    --success-foreground: 255 255 255;
+
+    /* Warning - Orange */
+    --warning: 245 158 11;
+    --warning-foreground: 255 255 255;
+
+    /* Info - Blue */
+    --info: 59 130 246;
+    --info-foreground: 255 255 255;
+
+    /* Border & Input */
     --border: 226 232 240;
     --input: 226 232 240;
     --ring: 59 130 246;
 
-    --radius: 0.75rem;
+    /* Border Radius */
+    --radius: 0.5rem;
   }
 }
 
 @layer base {
   * {
-    @apply border-primary/20;
+    @apply border-slate-200;
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-white text-slate-700 font-sans antialiased;
   }
 
   html {
     scroll-behavior: smooth;
   }
 
-  /* Garantir que todos os inputs sejam brancos com placeholder padrão */
+  /* Garantir que todos os inputs sejam brancos com estilos consistentes */
   input, textarea, select {
-    @apply bg-white border-primary/20 text-slate-700;
+    @apply bg-white border-slate-200 text-slate-700;
   }
 
-  /* Remover destaque de foco nos inputs */
+  /* Foco consistente em inputs */
   input:focus, textarea:focus, select:focus {
     @apply outline-none ring-1 ring-primary border-primary;
   }
 
-  /* Todos os botões com fundo branco */
-  button {
-    @apply bg-white;
-  }
-
-  /* Placeholder cor padrão */
+  /* Placeholder padrão */
   ::placeholder {
     @apply text-slate-400;
   }
 
-  /* Textos padrão */
+  /* Tipografia base */
   h1, h2, h3, h4, h5, h6 {
-    @apply text-slate-800;
+    @apply text-slate-800 font-bold leading-tight;
+  }
+
+  h1 {
+    @apply text-2xl sm:text-3xl md:text-4xl;
+  }
+
+  h2 {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+
+  h3 {
+    @apply text-lg sm:text-xl font-semibold;
+  }
+
+  h4 {
+    @apply text-base sm:text-lg font-semibold;
   }
 
   p, span, div {
     @apply text-slate-700;
   }
+
+  /* Links */
+  a {
+    @apply text-primary hover:underline transition-colors;
+  }
 }
 
 @layer components {
+  /* Calendar Components */
   .calendar-day {
-    @apply w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-all duration-200;
+    @apply w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-xs sm:text-sm font-medium transition-all duration-200;
   }
   
   .calendar-day-available {
-    @apply hover:bg-green-50 cursor-pointer relative text-green-700;
+    @apply hover:bg-green-50 cursor-pointer relative text-green-700 border border-green-200;
   }
   
   .calendar-day-selected {
-    @apply bg-green-600 text-white;
+    @apply bg-green-500 text-white border-green-600;
   }
   
   .calendar-day-unavailable {
-    @apply text-muted-foreground cursor-not-allowed;
+    @apply text-slate-400 cursor-not-allowed border border-slate-200;
   }
   
   .availability-dot {
     @apply w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full absolute -bottom-0.5 sm:-bottom-1 left-1/2 transform -translate-x-1/2;
   }
 
+  /* Card Components */
   .admin-card {
-    @apply bg-white rounded-lg shadow-md p-3 sm:p-4 border border-primary/20;
+    @apply bg-white rounded-lg shadow-md p-3 sm:p-4 border border-slate-200;
   }
 
+  .card-elevated {
+    @apply bg-white rounded-xl shadow-xl p-6 border border-slate-200;
+  }
+
+  /* Button Components */
   .mobile-button {
-    @apply w-full min-h-[48px] px-4 py-3 text-sm sm:text-base font-medium rounded-lg transition-colors bg-white border-primary/20 text-primary;
+    @apply w-full min-h-[48px] px-4 py-3 text-sm sm:text-base font-medium rounded-lg transition-colors;
   }
 
-  /* Otimizações para mobile */
+  /* Status Badges */
+  .badge-success {
+    @apply px-2 py-1 bg-green-100 text-green-700 rounded text-sm font-medium;
+  }
+
+  .badge-error {
+    @apply px-2 py-1 bg-red-100 text-red-700 rounded text-sm font-medium;
+  }
+
+  .badge-warning {
+    @apply px-2 py-1 bg-orange-100 text-orange-700 rounded text-sm font-medium;
+  }
+
+  .badge-info {
+    @apply px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium;
+  }
+
+  /* Alert Components */
+  .alert-success {
+    @apply p-4 bg-green-50 border border-green-200 rounded-lg;
+  }
+
+  .alert-error {
+    @apply p-4 bg-red-50 border border-red-200 rounded-lg;
+  }
+
+  .alert-warning {
+    @apply p-4 bg-orange-50 border border-orange-200 rounded-lg;
+  }
+
+  .alert-info {
+    @apply p-4 bg-blue-50 border border-blue-200 rounded-lg;
+  }
+
+  /* Mobile Optimizations */
   @media (max-width: 640px) {
     .container {
-      @apply px-3;
+      @apply px-4;
     }
     
     .mobile-button {
-      @apply min-h-[48px] text-base bg-white;
+      @apply min-h-[48px] text-base;
     }
     
-    /* Garantir que textos não se sobreponham */
     .text-responsive {
       @apply text-sm leading-relaxed;
     }
     
-    /* Melhorar espaçamento em telas pequenas */
     .space-y-mobile > * + * {
       @apply mt-3;
     }
 
-    /* Melhorar tipografia mobile */
     h1, h2, h3 {
       @apply leading-tight;
     }
 
-    /* Botões mobile-friendly */
     button {
       @apply min-h-[44px] touch-manipulation;
     }
 
-    /* Formulários mobile */
     input, textarea, select {
       @apply min-h-[44px] text-base;
     }
 
-    /* Navegação mobile */
     .mobile-nav {
-      @apply fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2;
+      @apply fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2 shadow-lg;
     }
   }
 
-  /* Animações suaves */
+  /* Animations */
   .animate-fade-in {
     animation: fadeIn 0.3s ease-in-out;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+      opacity: 0; 
+      transform: translateY(10px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
   }
 }
