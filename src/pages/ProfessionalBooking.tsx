@@ -8,6 +8,8 @@ import { ConfirmationScreen } from "@/components/ConfirmationScreen";
 import { useAppointments } from "@/contexts/AppointmentContext";
 import { scheduleService, PublicSchedule } from "@/services/scheduleService";
 import { userService, User } from "@/services/userService";
+import { addressService, Address } from "@/services/addressService";
+import { MapPin } from "lucide-react";
 
 export const ProfessionalBooking = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -23,14 +25,35 @@ export const ProfessionalBooking = () => {
   const [schedulesLoading, setSchedulesLoading] = useState(false);
   const [schedulesError, setSchedulesError] = useState<string | null>(null);
   const [professionalProfile, setProfessionalProfile] = useState<User | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [addressesLoading, setAddressesLoading] = useState(false);
   const { profile, setProfile } = useAppointments();
 
+  // Function to fetch public addresses
+  const fetchPublicAddresses = async (userId: string) => {
+    setAddressesLoading(true);
+    try {
+      const addressList = await addressService.getPublicAddresses(userId);
+      setAddresses(addressList);
+      
+      // Auto-select if only one active address
+      if (addressList.length === 1) {
+        setSelectedAddressId(addressList[0]._id);
+      }
+    } catch (error) {
+      console.error('Error fetching addresses:', error);
+    } finally {
+      setAddressesLoading(false);
+    }
+  };
+
   // Function to fetch public schedules
-  const fetchPublicSchedules = async (userId: string, month: number, year: number) => {
+  const fetchPublicSchedules = async (userId: string, month: number, year: number, addressId?: string | null) => {
     setSchedulesLoading(true);
     setSchedulesError(null);
     try {
-      const schedules = await scheduleService.getPublicSchedules(userId, month, year);
+      const schedules = await scheduleService.getPublicSchedules(userId, month, year, addressId || undefined);
       setPublicSchedules(schedules);
     } catch (error) {
       console.error('Error fetching public schedules:', error);
@@ -68,14 +91,19 @@ export const ProfessionalBooking = () => {
     // Carregar dados do profissional baseado no userId da URL
     if (userId) {
       fetchProfessionalProfile(userId);
-
-      // Fetch schedules for current month
-      const now = new Date();
-      const currentMonth = now.getMonth() + 1; // getMonth() returns 0-11
-      const currentYear = now.getFullYear();
-      fetchPublicSchedules(userId, currentMonth, currentYear);
+      fetchPublicAddresses(userId);
     }
   }, [userId, setProfile]);
+
+  // Fetch schedules when address selection changes
+  useEffect(() => {
+    if (userId && (selectedAddressId || addresses.length === 1 || addresses.length === 0)) {
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+      fetchPublicSchedules(userId, currentMonth, currentYear, selectedAddressId);
+    }
+  }, [userId, selectedAddressId, addresses.length]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -84,7 +112,7 @@ export const ProfessionalBooking = () => {
 
   const handleMonthChange = (month: number, year: number) => {
     if (userId) {
-      fetchPublicSchedules(userId, month, year);
+      fetchPublicSchedules(userId, month, year, selectedAddressId);
     }
   };
 
@@ -116,6 +144,10 @@ export const ProfessionalBooking = () => {
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 1:
+        // Only show calendar if address is selected (or if there's only one address or no addresses)
+        if (addresses.length > 1 && !selectedAddressId) {
+          return null;
+        }
         return (
           <AppointmentCalendar 
             onDateSelect={handleDateSelect}
@@ -145,14 +177,16 @@ export const ProfessionalBooking = () => {
           />
         );
       case 4:
+        const selectedAddress = addresses.find(addr => addr._id === selectedAddressId);
         return (
           <ConfirmationScreen
             appointmentData={{
               date: selectedDate!,
               time: selectedTime!,
-              name: personalData.name,
-              phone1: personalData.phone1,
-              phone2: personalData.phone2
+              name: personalData!.name,
+              phone1: personalData!.phone1,
+              phone2: personalData!.phone2,
+              address: selectedAddress?.address
             }}
           />
         );
@@ -202,6 +236,34 @@ export const ProfessionalBooking = () => {
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
         <ProfessionalHeader />
         
+        {/* Address Selector - Only show if multiple addresses */}
+        {addresses.length > 1 && currentStep === 1 && (
+          <div className="mt-6 bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <MapPin className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-slate-800">Selecione o local de atendimento</h3>
+            </div>
+            <select
+              value={selectedAddressId || ''}
+              onChange={(e) => setSelectedAddressId(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-800"
+              disabled={addressesLoading}
+            >
+              <option value="">Selecione um endereço...</option>
+              {addresses.map((addr) => (
+                <option key={addr._id} value={addr._id}>
+                  {addr.address}
+                </option>
+              ))}
+            </select>
+            {!selectedAddressId && (
+              <p className="mt-2 text-sm text-amber-600">
+                Por favor, selecione um endereço para visualizar os horários disponíveis
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="mt-6 sm:mt-8">
           {renderCurrentStep()}
         </div>

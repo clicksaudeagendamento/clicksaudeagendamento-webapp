@@ -4,6 +4,7 @@ import { apiService } from '@/services/api';
 import { timeValidation } from '@/utils/timeValidation';
 import { appointmentService, Appointment } from '@/services/appointmentService';
 import { userService, User } from '@/services/userService';
+import { addressService, Address } from '@/services/addressService';
 
 
 export type AppointmentStatus = 'criado' | 'confirmado' | 'realizado' | 'cancelado';
@@ -28,7 +29,6 @@ export interface ProfessionalProfile {
   name: string;
   specialty: string;
   register: string;
-  address: string;
   phone: string;
   email: string;
   workingHours: string;
@@ -39,6 +39,8 @@ export interface ProfessionalProfile {
 export interface AppointmentContextType {
   schedules: Schedule[];
   apiAppointments: Appointment[];
+  addresses: Address[];
+  selectedAddressId: string | null;
   profile: ProfessionalProfile;
   loading: boolean;
   apiLoading: boolean;
@@ -61,6 +63,8 @@ export interface AppointmentContextType {
   getProfileByRegister: (register: string) => ProfessionalProfile | null;
   getProfileByPhoneNumber: (phoneNumber: string) => ProfessionalProfile | null;
   fetchUserProfile: () => Promise<void>;
+  fetchAddresses: () => Promise<void>;
+  setSelectedAddressId: (id: string | null) => void;
 }
 
 const AppointmentContext = createContext<AppointmentContextType | undefined>(undefined);
@@ -112,13 +116,14 @@ const generateFakeSchedules = (): Schedule[] => {
 export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   const [schedules, setSchedules] = useState<Schedule[]>(generateFakeSchedules());
   const [apiAppointments, setApiAppointments] = useState<Appointment[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
   const [profile, setProfile] = useState<ProfessionalProfile>({
     name: '',
     specialty: '',
     register: '',
-    address: '',
     phone: '',
     email: '',
     workingHours: '',
@@ -148,14 +153,18 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
 
     setApiLoading(true);
     try {
-      const appointments = await appointmentService.getAppointmentsByMonth(month, token);
+      const appointments = await appointmentService.getAppointmentsByMonth(
+        month, 
+        token,
+        selectedAddressId || undefined
+      );
       setApiAppointments(appointments);
     } catch (err) {
       console.error('Error fetching appointments:', err);
     } finally {
       setApiLoading(false);
     }
-  }, []);
+  }, [selectedAddressId]);
 
   // Get appointments for a specific date
   const getAppointmentsForDate = useCallback((date: Date): Appointment[] => {
@@ -396,7 +405,6 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
         name: userData.fullName,
         specialty: userData.specialty || '',
         register: userData.registration || '',
-        address: userData.address || '',
         phone: formatPhoneFromAPI(userData.phone),
         email: userData.email,
         workingHours: userData.workingHours || '',
@@ -410,9 +418,35 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  // Fetch addresses from API
+  const fetchAddresses = useCallback(async () => {
+    const token = getToken();
+    if (!token) {
+      console.error('Token de autenticação não encontrado');
+      return;
+    }
+
+    try {
+      const addressList = await addressService.getAddresses(token);
+      setAddresses(addressList);
+      
+      // Set first active address as selected if none is selected
+      if (!selectedAddressId && addressList.length > 0) {
+        const firstActive = addressList.find(addr => addr.isActive);
+        if (firstActive) {
+          setSelectedAddressId(firstActive._id);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching addresses:', err);
+    }
+  }, [selectedAddressId]);
+
   const value: AppointmentContextType = {
     schedules,
     apiAppointments,
+    addresses,
+    selectedAddressId,
     profile,
     loading,
     apiLoading,
@@ -449,6 +483,8 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
       return null;
     },
     fetchUserProfile,
+    fetchAddresses,
+    setSelectedAddressId,
   };
 
   return (

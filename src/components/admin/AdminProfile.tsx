@@ -86,7 +86,6 @@ export const AdminProfile = () => {
       formData.specialty,
       formData.register,
       formData.phone,
-      formData.address,
       formData.workingHours,
       formData.email
     ];
@@ -283,16 +282,6 @@ export const AdminProfile = () => {
                 <span className="text-red-500 text-xs">E-mail inválido</span>
               )}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Endereço Completo</label>
-            <Input
-              value={formData.address}
-              onChange={(e) => handleInputChange('address', e.target.value)}
-              className="w-full bg-white border-slate-200 h-12"
-              required
-            />
           </div>
 
           <div className="space-y-2">

@@ -6,9 +6,12 @@ import { useAppointments } from "@/contexts/AppointmentContext";
 import { AdminScheduleForm } from "./AdminScheduleForm";
 import { timeValidation } from "@/utils/timeValidation";
 import { scheduleService, Schedule } from "@/services/scheduleService";
+import { useAddressSelection } from "@/hooks/useAddressSelection";
+import { AddressSelectionRequired } from "./AddressSelectionRequired";
 
 export const AdminSchedules = () => {
-  const { schedules, profile, loading, canEditSchedule } = useAppointments();
+  const { schedules, profile, loading, canEditSchedule, selectedAddressId } = useAppointments();
+  const { shouldShowContent, requiresSelection, hasNoAddresses, addresses } = useAddressSelection();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -40,7 +43,7 @@ export const AdminSchedules = () => {
     setError('');
 
     try {
-      const schedules = await scheduleService.getSchedulesByMonth(month, token);
+      const schedules = await scheduleService.getSchedulesByMonth(month, token, selectedAddressId || undefined);
       setApiSchedules(schedules);
     } catch (err) {
       console.error('Error fetching schedules:', err);
@@ -50,11 +53,14 @@ export const AdminSchedules = () => {
     }
   };
 
-  // Fetch schedules when month changes
+  // Fetch schedules when month changes or address selection changes
   useEffect(() => {
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-    fetchSchedulesByMonth(month);
-  }, [currentDate.getMonth(), currentDate.getFullYear()]);
+    // Only fetch if we should show content (address is selected or only one address exists)
+    if (shouldShowContent && !hasNoAddresses) {
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      fetchSchedulesByMonth(month);
+    }
+  }, [currentDate.getMonth(), currentDate.getFullYear(), selectedAddressId, shouldShowContent, hasNoAddresses]);
 
   const getCalendarDays = (date: Date) => {
     const year = date.getFullYear();
@@ -199,6 +205,11 @@ export const AdminSchedules = () => {
   const currentMonthDays = getCalendarDays(currentDate);
   const canEdit = selectedDate ? canEditSchedule(selectedDate) : false;
   const allSchedulesInPast = selectedDate ? areAllSchedulesInPast(selectedSchedules) : false;
+
+  // Show address selection required message if needed
+  if (requiresSelection || hasNoAddresses) {
+    return <AddressSelectionRequired addressCount={addresses.length} />;
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">

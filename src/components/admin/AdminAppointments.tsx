@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Phone, User, Clock, Calendar as CalendarIcon, X, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Phone, User, Clock, Calendar as CalendarIcon, X, AlertTriangle, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { useAppointments } from "@/contexts/AppointmentContext";
@@ -8,6 +8,8 @@ import { timeValidation } from "@/utils/timeValidation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { appointmentService } from "@/services/appointmentService";
+import { useAddressSelection } from "@/hooks/useAddressSelection";
+import { AddressSelectionRequired } from "./AddressSelectionRequired";
 
 export const AdminAppointments = () => {
   const { 
@@ -19,22 +21,34 @@ export const AdminAppointments = () => {
     apiLoading,
     canCancelAppointment,
     fetchAppointmentsByMonth,
-    getAppointmentsForDate
+    getAppointmentsForDate,
+    addresses,
+    selectedAddressId,
+    setSelectedAddressId,
+    fetchAddresses
   } = useAppointments();
+  const { shouldShowContent, requiresSelection, hasNoAddresses } = useAddressSelection();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'today' | 'upcoming' | 'past'>('all');
   const [error, setError] = useState('');
 
-  // Fetch appointments when month changes
+  // Load addresses on mount
   useEffect(() => {
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-    const year = currentDate.getFullYear();
-    const monthKey = `${year}-${month}`;
-    
-    // Only fetch if we don't have data for this month or if it's a different month
-    fetchAppointmentsByMonth(month);
-  }, [currentDate.getMonth(), currentDate.getFullYear(), fetchAppointmentsByMonth]);
+    fetchAddresses();
+  }, [fetchAddresses]);
+
+  // Fetch appointments when month changes or address selection changes
+  useEffect(() => {
+    // Only fetch if we should show content (address is selected or only one address exists)
+    if (shouldShowContent && !hasNoAddresses) {
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const year = currentDate.getFullYear();
+      const monthKey = `${year}-${month}`;
+      
+      fetchAppointmentsByMonth(month);
+    }
+  }, [currentDate.getMonth(), currentDate.getFullYear(), fetchAppointmentsByMonth, shouldShowContent, hasNoAddresses]);
 
   const getCalendarDays = (date: Date) => {
     const year = date.getFullYear();
@@ -61,7 +75,16 @@ export const AdminAppointments = () => {
   };
 
   const getAllAppointments = () => {
-    return apiAppointments.map(appointment => {
+    // Filter by selected address if one is selected
+    let filteredAppointments = apiAppointments;
+    
+    if (selectedAddressId) {
+      filteredAppointments = apiAppointments.filter(
+        appointment => appointment.addressId === selectedAddressId
+      );
+    }
+    
+    return filteredAppointments.map(appointment => {
       const appointmentDate = new Date(appointment.scheduleDateTime);
       const time = format(appointmentDate, 'HH:mm');
       
@@ -72,7 +95,8 @@ export const AdminAppointments = () => {
         time: time,
         date: appointmentDate,
         scheduleId: appointment.scheduleId,
-        status: appointment.status
+        status: appointment.status,
+        addressId: appointment.addressId
       };
     }).sort((a, b) => {
       const dateA = new Date(`${a.date.toDateString()} ${a.time}`);
@@ -166,6 +190,11 @@ export const AdminAppointments = () => {
   const currentMonthDays = getCalendarDays(currentDate);
   const today = new Date();
 
+  // Show address selection required message if needed
+  if (requiresSelection || hasNoAddresses) {
+    return <AddressSelectionRequired addressCount={addresses.length} />;
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {error && (
@@ -174,6 +203,28 @@ export const AdminAppointments = () => {
           <span className="text-sm text-red-700">{error}</span>
         </div>
       )}
+
+      {/* Address Filter */}
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-slate-200">
+        <div className="flex items-center gap-3 mb-2">
+          <MapPin className="w-5 h-5 text-primary" />
+          <label className="text-sm font-semibold text-slate-800">
+            Filtrar por Endereço
+          </label>
+        </div>
+        <select
+          value={selectedAddressId || 'all'}
+          onChange={(e) => setSelectedAddressId(e.target.value === 'all' ? null : e.target.value)}
+          className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+        >
+          <option value="all">Todos os endereços</option>
+          {addresses.map((address) => (
+            <option key={address._id} value={address._id}>
+              {address.address} {!address.isActive && '(Inativo)'}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {apiLoading && (
         <div className="flex items-center justify-center p-8">

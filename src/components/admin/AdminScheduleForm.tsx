@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, X, Calendar, Clock, Save, AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, X, Calendar, Clock, Save, AlertTriangle, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
@@ -13,7 +13,7 @@ interface AdminScheduleFormProps {
 }
 
 export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleFormProps) => {
-  const { profile, loading } = useAppointments();
+  const { profile, loading, addresses, selectedAddressId, setSelectedAddressId, fetchAddresses } = useAppointments();
   const [singleDate, setSingleDate] = useState('');
   const [startTime, setStartTime] = useState('08:00');
   const [endTime, setEndTime] = useState('17:00');
@@ -24,6 +24,11 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
   const [error, setError] = useState('');
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Load addresses on mount
+  useEffect(() => {
+    fetchAddresses();
+  }, [fetchAddresses]);
 
   // Get token and check user role
   const getToken = () => {
@@ -67,6 +72,12 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
 
   const handleCreateSchedule = async () => {
     if (!singleDate) return;
+
+    // Validate address selection
+    if (!selectedAddressId) {
+      setError('Por favor, selecione um endereço de atendimento');
+      return;
+    }
     
     // Create date at midnight in local timezone
     const [year, month, day] = singleDate.split('-').map(Number);
@@ -106,7 +117,8 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
       
       await scheduleService.createSchedule({
         date: isoDate,
-        timeSlots: timeSlots
+        timeSlots: timeSlots,
+        addressId: selectedAddressId
       }, token);
       
       onClose();
@@ -162,6 +174,36 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
             <span className="text-sm text-red-700">{error}</span>
           </div>
         )}
+
+        {/* Address Selection */}
+        <div>
+          <label className="text-sm font-semibold text-slate-800 mb-2 block flex items-center gap-2">
+            <MapPin className="w-4 h-4" />
+            Endereço de Atendimento
+          </label>
+          {addresses.length === 0 ? (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                Nenhum endereço cadastrado. Por favor, cadastre um endereço antes de criar agendas.
+              </p>
+            </div>
+          ) : (
+            <select
+              value={selectedAddressId || ''}
+              onChange={(e) => setSelectedAddressId(e.target.value)}
+              className="w-full h-12 px-3 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              <option value="">Selecione um endereço</option>
+              {addresses
+                .filter(addr => addr.isActive)
+                .map((address) => (
+                  <option key={address._id} value={address._id}>
+                    {address.address}
+                  </option>
+                ))}
+            </select>
+          )}
+        </div>
 
         {/* Quick Presets */}
         <div>
@@ -306,7 +348,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Button
             onClick={handleCreateSchedule}
-            disabled={!singleDate || isSubmitting}
+            disabled={!singleDate || !selectedAddressId || isSubmitting || addresses.length === 0}
             className="flex-1 h-12 font-semibold text-sm sm:text-base"
             style={{ 
               backgroundColor: profile.primaryColor,
