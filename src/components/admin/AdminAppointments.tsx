@@ -204,28 +204,6 @@ export const AdminAppointments = () => {
         </div>
       )}
 
-      {/* Address Filter */}
-      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-slate-200">
-        <div className="flex items-center gap-3 mb-2">
-          <MapPin className="w-5 h-5 text-primary" />
-          <label className="text-sm font-semibold text-slate-800">
-            Filtrar por Endereço
-          </label>
-        </div>
-        <select
-          value={selectedAddressId || 'all'}
-          onChange={(e) => setSelectedAddressId(e.target.value === 'all' ? null : e.target.value)}
-          className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-        >
-          <option value="all">Todos os endereços</option>
-          {addresses.map((address) => (
-            <option key={address._id} value={address._id}>
-              {address.address} {!address.isActive && '(Inativo)'}
-            </option>
-          ))}
-        </select>
-      </div>
-
       {apiLoading && (
         <div className="flex items-center justify-center p-8">
           <Loading />

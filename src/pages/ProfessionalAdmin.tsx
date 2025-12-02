@@ -76,41 +76,6 @@ export const ProfessionalAdmin = () => {
           <p className="text-slate-600 text-sm sm:text-base mb-4">
             Gerencie suas agendas, agendamentos e perfil profissional
           </p>
-
-          {/* Address Filter - Only show if multiple addresses and not on addresses tab */}
-          {addresses.length > 1 && activeTab !== 'addresses' && activeTab !== 'profile' && (
-            <div className="mt-4 pt-4 border-t border-slate-200">
-              <div className="flex items-center gap-3">
-                <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
-                <div className="flex-1">
-                  <select
-                    value={selectedAddressId || ''}
-                    onChange={(e) => setSelectedAddressId(e.target.value || null)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-slate-800 text-sm"
-                  >
-                    <option value="">Todos os endereços</option>
-                    {addresses.filter(addr => addr.isActive).map((addr) => (
-                      <option key={addr._id} value={addr._id}>
-                        {addr.address}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Message when single address is auto-selected */}
-          {addresses.length === 1 && activeTab !== 'addresses' && activeTab !== 'profile' && (
-            <div className="mt-4 pt-4 border-t border-slate-200">
-              <div className="flex items-center gap-2 text-sm text-slate-600 bg-blue-50 p-3 rounded-lg">
-                <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                <span>
-                  <strong>Endereço:</strong> {addresses[0].address}
-                </span>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Navigation Tabs */}
@@ -162,6 +127,33 @@ export const ProfessionalAdmin = () => {
             </button>
           </div>
         </div>
+
+        {/* Address Selector - Only show if multiple addresses and not on addresses/profile tabs */}
+        {addresses.length > 1 && activeTab !== 'addresses' && activeTab !== 'profile' && (
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <MapPin className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-slate-800">Selecione o local de atendimento</h3>
+            </div>
+            <select
+              value={selectedAddressId || ''}
+              onChange={(e) => setSelectedAddressId(e.target.value || null)}
+              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-800"
+            >
+              <option value="">Selecione um endereço...</option>
+              {addresses.filter(addr => addr.isActive).map((addr) => (
+                <option key={addr._id} value={addr._id}>
+                  {addr.address}
+                </option>
+              ))}
+            </select>
+            {!selectedAddressId && (
+              <p className="mt-2 text-sm text-amber-600">
+                Por favor, selecione um endereço para visualizar {activeTab === 'schedules' ? 'as agendas' : 'os agendamentos'}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Content */}
         {renderContent()}
