@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Calendar, Clock, Settings, Eye, ArrowRight, Users, Link as LinkIcon } from "lucide-react";
@@ -7,6 +7,16 @@ export const Welcome = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 5;
+
+  // Limpa a flag de registro quando o componente é montado
+  useEffect(() => {
+    // Remove a flag após um pequeno delay para garantir que o componente foi renderizado
+    const timer = setTimeout(() => {
+      sessionStorage.removeItem('justRegistered');
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const steps = [
     {

@@ -20,9 +20,11 @@ import {
   Zap,
 } from "lucide-react"
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 export const LandingPage = () => {
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [demoOpen, setDemoOpen] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
@@ -115,13 +117,16 @@ export const LandingPage = () => {
 
       await userService.registerUser(payload)
 
+      // Define a flag no sessionStorage indicando que o usuário acabou de se cadastrar
+      sessionStorage.setItem('justRegistered', 'true')
+
       toast({
         title: "Cadastro realizado!",
         description: "Redirecionando para boas-vindas...",
       })
 
       setTimeout(() => {
-        window.location.href = "/boas-vindas"
+        navigate('/boas-vindas')
       }, 1500)
     } catch (error) {
       console.error("Registration error:", error)
