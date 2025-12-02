@@ -31,5 +31,32 @@ export const authService = {
       path: '/auth/login',
       data: payload
     });
+  },
+
+  logout: (): void => {
+    // Clear all auth data
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
+    
+    // Redirect to login page
+    window.location.href = '/login';
+  },
+
+  isAuthenticated: (): boolean => {
+    const token = localStorage.getItem('access_token');
+    return !!token;
+  },
+
+  getToken: (): string | null => {
+    return localStorage.getItem('access_token');
+  },
+
+  getUser: (): User | null => {
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch {
+      return null;
+    }
   }
 }; 

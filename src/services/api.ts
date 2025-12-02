@@ -33,6 +33,17 @@ export async function apiRequest<T = unknown>({ method = 'GET', path, data, toke
     responseBody = undefined;
   }
   if (!response.ok) {
+    // Handle 401 Unauthorized - token expired or invalid
+    if (response.status === 401) {
+      // Clear all auth data
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
+      
+      // Redirect to login page
+      window.location.href = '/login';
+      
+      throw new Error('Sessão expirada. Por favor, faça login novamente.');
+    }
     throw new Error(responseBody?.message || 'API request failed');
   }
   return responseBody;
