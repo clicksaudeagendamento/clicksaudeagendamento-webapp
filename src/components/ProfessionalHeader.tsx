@@ -150,7 +150,6 @@ export const ProfessionalHeader = () => {
       {/* Descrição Profissional */}
       {profile.description && profile.description.trim() && (
         <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg bg-slate-50 border border-slate-200">
-          <h3 className="text-sm font-semibold text-slate-700 mb-2">Sobre o Profissional</h3>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
             {profile.description}
           </p>
