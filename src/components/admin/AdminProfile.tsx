@@ -109,7 +109,8 @@ export const AdminProfile = () => {
       formData.email !== profile.email ||
       (formData.description || '') !== (profile.description || '') ||
       (formData.website || '') !== (profile.website || '') ||
-      (formData.instagram || '') !== (profile.instagram || '');
+      (formData.instagram || '') !== (profile.instagram || '') ||
+      (formData.profileImage || '') !== (profile.profileImage || '');
     
     setHasChanges(changed);
   }, [formData, profile]);
@@ -241,7 +242,7 @@ export const AdminProfile = () => {
             </div>
             {isEditing && (
               <div className="flex gap-2">
-                {/* <label htmlFor="photo-upload">
+                <label htmlFor="photo-upload">
                   <Button
                     type="button"
                     variant="outline"
@@ -252,7 +253,7 @@ export const AdminProfile = () => {
                     <Camera className="w-4 h-4" />
                     Alterar Foto
                   </Button>
-                </label> */}
+                </label>
                 <input
                   id="photo-upload"
                   type="file"

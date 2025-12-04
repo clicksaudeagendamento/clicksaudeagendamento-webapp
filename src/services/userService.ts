@@ -19,6 +19,7 @@ export interface UpdateUserPayload {
   description?: string;
   website?: string;
   instagram?: string;
+  profileImage?: string;
   accepted?: boolean;
 }
 
@@ -50,6 +51,7 @@ export interface User {
   description?: string;
   website?: string;
   instagram?: string;
+  profileImage?: string;
 }
 
 export const userService = {

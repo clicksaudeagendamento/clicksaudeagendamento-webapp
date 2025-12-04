@@ -9,7 +9,7 @@ import { useAppointments } from "@/contexts/AppointmentContext";
 import { scheduleService, PublicSchedule } from "@/services/scheduleService";
 import { userService, User } from "@/services/userService";
 import { addressService, Address } from "@/services/addressService";
-import { MapPin } from "lucide-react";
+import { MapPin, Navigation } from "lucide-react";
 
 export const ProfessionalBooking = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -78,7 +78,10 @@ export const ProfessionalBooking = () => {
         address: userData.address || '',
         workingHours: userData.workingHours || '',
         primaryColor: '#3B82F6', // Default color
-        profileImage: '/placeholder.svg'
+        profileImage: userData.profileImage,
+        description: userData.description || '',
+        website: userData.website || '',
+        instagram: userData.instagram || ''
       };
       setProfile(mappedProfile);
     } catch (error) {
@@ -239,9 +242,28 @@ export const ProfessionalBooking = () => {
         {/* Address Selector - Only show if multiple addresses */}
         {addresses.length > 1 && currentStep === 1 && (
           <div className="mt-6 bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-slate-200">
-            <div className="flex items-center gap-3 mb-3">
-              <MapPin className="w-5 h-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-slate-800">Selecione o local de atendimento</h3>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <MapPin className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-slate-800">Selecione o local de atendimento</h3>
+              </div>
+              {selectedAddressId && (
+                <button
+                  onClick={() => {
+                    const address = addresses.find(addr => addr._id === selectedAddressId);
+                    if (address) {
+                      const encodedAddress = encodeURIComponent(address.address);
+                      const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
+                      window.open(googleMapsUrl, '_blank');
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Traçar rota no Google Maps"
+                >
+                  <Navigation className="w-4 h-4" />
+                  <span className="hidden sm:inline">Como chegar? Clique aqui</span>
+                </button>
+              )}
             </div>
             <select
               value={selectedAddressId || ''}

@@ -394,6 +394,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
       description?: string;
       website?: string;
       instagram?: string;
+      profileImage?: string;
     } = {
       fullName: newProfile.name,
       phone: phoneDigits,
@@ -404,6 +405,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
       description: newProfile.description,
       website: newProfile.website,
       instagram: newProfile.instagram,
+      profileImage: newProfile.profileImage,
     };
 
     // Call API to update user
@@ -448,7 +450,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
         phone: formatPhoneFromAPI(userData.phone),
         email: userData.email,
         workingHours: userData.workingHours || '',
-        profileImage: undefined, // API doesn't provide this yet
+        profileImage: userData.profileImage,
         primaryColor: DEFAULT_PRIMARY_COLOR,
         description: userData.description || '',
         website: userData.website || '',
