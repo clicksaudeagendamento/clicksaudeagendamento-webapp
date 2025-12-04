@@ -26,6 +26,7 @@ export interface Schedule {
 }
 
 export interface ProfessionalProfile {
+  id?: string;
   name: string;
   specialty: string;
   register: string;
@@ -402,6 +403,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
 
       // Map API user data to ProfessionalProfile format
       const mappedProfile: ProfessionalProfile = {
+        id: userData._id,
         name: userData.fullName,
         specialty: userData.specialty || '',
         register: userData.registration || '',

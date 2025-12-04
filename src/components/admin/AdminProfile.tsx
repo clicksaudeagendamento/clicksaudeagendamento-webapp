@@ -4,9 +4,11 @@ import { Save, User, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppointments } from "@/contexts/AppointmentContext";
+import { useToast } from "@/hooks/use-toast";
 
 export const AdminProfile = () => {
   const { profile, updateProfile, updatePrimaryColor, fetchUserProfile } = useAppointments();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({ ...profile, email: profile.email || '' });
   const [emailValid, setEmailValid] = useState(true);
   const [phoneValid, setPhoneValid] = useState(true);
@@ -221,6 +223,42 @@ export const AdminProfile = () => {
                 />
               </div>
             )}
+          </div>
+
+          {/* Appointment Link Section */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700 text-center block">
+              Link de Agendamento
+            </label>
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-xs text-slate-500 text-center">
+                Compartilhe este link com seus pacientes para que eles possam visualizar suas agendas e criar agendamentos
+              </p>
+              
+              <div className="flex items-center gap-2 w-full max-w-2xl">
+                <Input
+                  value={`https://www.clicksaudeagendamento.com.br/${profile.id}/agendamento`}
+                  readOnly
+                  className="w-full bg-slate-50 border-slate-200 h-12 text-sm"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://www.clicksaudeagendamento.com.br/${profile.id}/agendamento`);
+                    toast({
+                      title: "Link copiado!",
+                      description: "O link foi copiado para a área de transferência.",
+                      variant: "default",
+                      className: "bg-white border-white-200",
+                    });
+                  }}
+                  className="bg-white border-slate-200 h-12 px-4 whitespace-nowrap"
+                >
+                  Copiar Link
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Basic Information */}
