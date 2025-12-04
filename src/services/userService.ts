@@ -16,6 +16,9 @@ export interface UpdateUserPayload {
   registration?: string;
   address?: string;
   workingHours?: string;
+  description?: string;
+  website?: string;
+  instagram?: string;
   accepted?: boolean;
 }
 
@@ -44,6 +47,9 @@ export interface User {
   registration?: string;
   address?: string;
   workingHours?: string;
+  description?: string;
+  website?: string;
+  instagram?: string;
 }
 
 export const userService = {

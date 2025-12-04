@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Save, User, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useAppointments } from "@/contexts/AppointmentContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -13,9 +14,11 @@ export const AdminProfile = () => {
   const [emailValid, setEmailValid] = useState(true);
   const [phoneValid, setPhoneValid] = useState(true);
   const [allFilled, setAllFilled] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const isEditing = true;
 
@@ -96,7 +99,20 @@ export const AdminProfile = () => {
       validateEmail(formData.email) &&
       validatePhone(formData.phone.replace(/\D/g, ''))
     );
-  }, [formData]);
+
+    // Check if there are changes compared to original profile
+    const changed = 
+      formData.name !== profile.name ||
+      formData.specialty !== profile.specialty ||
+      formData.register !== profile.register ||
+      formData.phone !== profile.phone ||
+      formData.email !== profile.email ||
+      (formData.description || '') !== (profile.description || '') ||
+      (formData.website || '') !== (profile.website || '') ||
+      (formData.instagram || '') !== (profile.instagram || '');
+    
+    setHasChanges(changed);
+  }, [formData, profile]);
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     if (field === 'email') setEmailValid(true);
@@ -107,7 +123,7 @@ export const AdminProfile = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validate before save
     if (!validateEmail(formData.email)) {
       setEmailValid(false);
@@ -117,9 +133,32 @@ export const AdminProfile = () => {
       setPhoneValid(false);
       return;
     }
-    updateProfile(formData);
-    if (formData.primaryColor !== profile.primaryColor) {
-      updatePrimaryColor(formData.primaryColor);
+
+    setIsSaving(true);
+    try {
+      await updateProfile(formData);
+      if (formData.primaryColor !== profile.primaryColor) {
+        updatePrimaryColor(formData.primaryColor);
+      }
+      
+      // Show success toast
+      toast({
+        title: "Perfil atualizado!",
+        description: "Suas informações foram atualizadas com sucesso.",
+        variant: "default",
+        className: "bg-white border-white-200",
+      });
+      
+      setHasChanges(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Erro ao atualizar",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao atualizar o perfil.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -127,6 +166,7 @@ export const AdminProfile = () => {
     setFormData(prev => ({ ...prev, ...profile, email: profile.email || prev.email || '' }));
     setEmailValid(true);
     setPhoneValid(true);
+    setHasChanges(false);
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -321,6 +361,40 @@ export const AdminProfile = () => {
             </div>
           </div>
 
+          {/* Additional Information */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Descrição Profissional</label>
+            <Textarea
+              value={formData.description || ''}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              placeholder="Conte um pouco sobre você e sua experiência profissional..."
+              className="w-full bg-white border-slate-200 min-h-[120px] resize-none"
+              rows={5}
+            />
+            <p className="text-xs text-slate-500">Esta descrição será exibida para seus pacientes</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Website/Página Profissional</label>
+              <Input
+                value={formData.website || ''}
+                onChange={(e) => handleInputChange('website', e.target.value)}
+                placeholder="https://www.seusite.com.br"
+                className="w-full bg-white border-slate-200 h-12"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Instagram</label>
+              <Input
+                value={formData.instagram || ''}
+                onChange={(e) => handleInputChange('instagram', e.target.value)}
+                placeholder="@seuperfil"
+                className="w-full bg-white border-slate-200 h-12"
+              />
+            </div>
+          </div>
+
         </div>
 
         <div className="flex justify-end gap-2 mt-8">
@@ -328,6 +402,7 @@ export const AdminProfile = () => {
             variant="outline"
             onClick={handleCancel}
             className="bg-white border border-red-200 text-red-600 hover:bg-red-50"
+            disabled={isSaving}
           >
             Cancelar
           </Button>
@@ -335,9 +410,16 @@ export const AdminProfile = () => {
             onClick={handleSave}
             className="text-white bg-white border border-slate-200"
             style={{ backgroundColor: 'var(--primary)', color: 'white' }}
-            disabled={!allFilled}
+            disabled={!allFilled || !hasChanges || isSaving}
           >
-            <span>Atualizar</span>
+            {isSaving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <span>Atualizando...</span>
+              </>
+            ) : (
+              <span>Atualizar</span>
+            )}
           </Button>
         </div>
       </div>

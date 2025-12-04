@@ -35,6 +35,9 @@ export interface ProfessionalProfile {
   workingHours: string;
   profileImage?: string;
   primaryColor: string;
+  description?: string;
+  website?: string;
+  instagram?: string;
 }
 
 export interface AppointmentContextType {
@@ -56,7 +59,7 @@ export interface AppointmentContextType {
   cancelAppointment: (scheduleId: string, slotId: string) => Promise<void>;
   fetchAppointmentsByMonth: (month: string) => Promise<void>;
   getAppointmentsForDate: (date: Date) => Appointment[];
-  updateProfile: (profile: ProfessionalProfile) => void;
+  updateProfile: (profile: ProfessionalProfile) => Promise<void>;
   updatePrimaryColor: (color: string) => void;
   canEditSchedule: (date: Date) => boolean;
   canCancelAppointment: (date: Date, time: string) => boolean;
@@ -371,7 +374,42 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const updateProfile = (newProfile: ProfessionalProfile) => {
+  const updateProfile = async (newProfile: ProfessionalProfile): Promise<void> => {
+    const token = getToken();
+    if (!token) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    // Format phone to send to API (remove formatting)
+    const phoneDigits = newProfile.phone.replace(/\D/g, '');
+
+    // Prepare payload for API
+    const payload: {
+      fullName?: string;
+      phone?: string;
+      email?: string;
+      specialty?: string;
+      registration?: string;
+      workingHours?: string;
+      description?: string;
+      website?: string;
+      instagram?: string;
+    } = {
+      fullName: newProfile.name,
+      phone: phoneDigits,
+      email: newProfile.email,
+      specialty: newProfile.specialty,
+      registration: newProfile.register,
+      workingHours: newProfile.workingHours,
+      description: newProfile.description,
+      website: newProfile.website,
+      instagram: newProfile.instagram,
+    };
+
+    // Call API to update user
+    await userService.updateUserById(newProfile.id!, payload, token);
+    
+    // Update local state
     setProfile(newProfile);
   };
 
@@ -412,6 +450,9 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
         workingHours: userData.workingHours || '',
         profileImage: undefined, // API doesn't provide this yet
         primaryColor: DEFAULT_PRIMARY_COLOR,
+        description: userData.description || '',
+        website: userData.website || '',
+        instagram: userData.instagram || '',
       };
       
       setProfile(mappedProfile);
