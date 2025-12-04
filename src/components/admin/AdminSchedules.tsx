@@ -237,7 +237,7 @@ export const AdminSchedules = () => {
             onClick={() => setShowCreateForm(!showCreateForm)}
             className="h-10 sm:h-12 px-4 sm:px-6 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm sm:text-base"
             style={{
-              backgroundColor: profile.primaryColor,
+              backgroundColor: profile.primaryColor || '#3B82F6',
               color: 'white'
             }}
           >
