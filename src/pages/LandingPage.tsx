@@ -123,6 +123,7 @@ export const LandingPage = () => {
       toast({
         title: "Cadastro realizado!",
         description: "Redirecionando para boas-vindas...",
+        variant: "success",
       })
 
       setTimeout(() => {

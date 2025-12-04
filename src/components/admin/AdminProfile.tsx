@@ -146,8 +146,7 @@ export const AdminProfile = () => {
       toast({
         title: "Perfil atualizado!",
         description: "Suas informações foram atualizadas com sucesso.",
-        variant: "default",
-        className: "bg-white border-white-200",
+        variant: "success",
       });
       
       setHasChanges(false);
@@ -290,8 +289,7 @@ export const AdminProfile = () => {
                     toast({
                       title: "Link copiado!",
                       description: "O link foi copiado para a área de transferência.",
-                      variant: "default",
-                      className: "bg-white border-white-200",
+                      variant: "success",
                     });
                   }}
                   className="bg-white border-slate-200 h-12 px-4 whitespace-nowrap"
