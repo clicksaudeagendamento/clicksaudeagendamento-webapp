@@ -1,10 +1,10 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { apiService } from '@/services/api';
 import { timeValidation } from '@/utils/timeValidation';
 import { appointmentService, Appointment } from '@/services/appointmentService';
 import { userService, User } from '@/services/userService';
 import { addressService, Address } from '@/services/addressService';
+import { DEFAULT_PRIMARY_COLOR } from '@/lib/constants';
 
 
 export type AppointmentStatus = 'criado' | 'confirmado' | 'realizado' | 'cancelado';
@@ -128,7 +128,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     phone: '',
     email: '',
     workingHours: '',
-    primaryColor: '',
+    primaryColor: DEFAULT_PRIMARY_COLOR,
   });
 
   const canEditSchedule = (date: Date): boolean => {
@@ -411,7 +411,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
         email: userData.email,
         workingHours: userData.workingHours || '',
         profileImage: undefined, // API doesn't provide this yet
-        primaryColor: '#3B82F6', // Default color
+        primaryColor: DEFAULT_PRIMARY_COLOR,
       };
       
       setProfile(mappedProfile);

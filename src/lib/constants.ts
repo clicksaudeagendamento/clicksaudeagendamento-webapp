@@ -3,6 +3,9 @@
  * Centralized design tokens and constants
  */
 
+// Default Primary Color for Profile
+export const DEFAULT_PRIMARY_COLOR = '#3B82F6';
+
 // Color Palette
 export const COLORS = {
   primary: {

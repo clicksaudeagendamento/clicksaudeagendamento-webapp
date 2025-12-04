@@ -8,6 +8,7 @@ import { timeValidation } from "@/utils/timeValidation";
 import { scheduleService, Schedule } from "@/services/scheduleService";
 import { useAddressSelection } from "@/hooks/useAddressSelection";
 import { AddressSelectionRequired } from "./AddressSelectionRequired";
+import { DEFAULT_PRIMARY_COLOR } from "@/lib/constants";
 
 export const AdminSchedules = () => {
   const { schedules, profile, loading, canEditSchedule, selectedAddressId } = useAppointments();
@@ -237,7 +238,7 @@ export const AdminSchedules = () => {
             onClick={() => setShowCreateForm(!showCreateForm)}
             className="h-10 sm:h-12 px-4 sm:px-6 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm sm:text-base"
             style={{
-              backgroundColor: profile.primaryColor || '#3B82F6',
+              backgroundColor: profile.primaryColor || DEFAULT_PRIMARY_COLOR,
               color: 'white'
             }}
           >

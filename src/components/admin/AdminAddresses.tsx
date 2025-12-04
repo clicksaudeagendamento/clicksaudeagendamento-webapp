@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { addressService, Address, CreateAddressDto, UpdateAddressDto } from "@/services/addressService";
 import { useAppointments } from "@/contexts/AppointmentContext";
+import { DEFAULT_PRIMARY_COLOR } from "@/lib/constants";
 
 export const AdminAddresses = () => {
   const { profile } = useAppointments();
@@ -194,7 +195,7 @@ export const AdminAddresses = () => {
               onClick={() => setIsAdding(true)}
               className="h-10 sm:h-12 px-4 sm:px-6 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm sm:text-base"
               style={{
-                backgroundColor: profile.primaryColor || '#3B82F6',
+                backgroundColor: profile.primaryColor || DEFAULT_PRIMARY_COLOR,
                 color: 'white'
               }}
             >
