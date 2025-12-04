@@ -33,6 +33,29 @@ export const ProfessionalAdmin = () => {
     }
   }, [navigate, fetchAddresses]);
 
+  // Auto-select first active address when addresses are loaded or when selected address becomes inactive
+  useEffect(() => {
+    if (addresses.length === 0) return;
+
+    const activeAddresses = addresses.filter(addr => addr.isActive);
+    
+    // If no address is selected, select the first active one
+    if (!selectedAddressId && activeAddresses.length > 0) {
+      setSelectedAddressId(activeAddresses[0]._id);
+      return;
+    }
+
+    // If selected address is not active anymore, select the first active one
+    if (selectedAddressId) {
+      const isSelectedActive = activeAddresses.some(addr => addr._id === selectedAddressId);
+      if (!isSelectedActive && activeAddresses.length > 0) {
+        setSelectedAddressId(activeAddresses[0]._id);
+      } else if (!isSelectedActive && activeAddresses.length === 0) {
+        setSelectedAddressId(null);
+      }
+    }
+  }, [addresses, selectedAddressId, setSelectedAddressId]);
+
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
