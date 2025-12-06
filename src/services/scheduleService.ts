@@ -1,9 +1,22 @@
 import { apiRequest } from './api';
 
+export interface RecurrenceConfig {
+  enabled: boolean;
+  dayOfWeek?: number; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  occurrences?: number; // Number of times to repeat (e.g., 3 for 3 weeks)
+}
+
 export interface CreateSchedulePayload {
-  date: string; // ISO date string
+  // Legacy support
+  date?: string; // ISO date string
+  
+  // New fields
+  startDate?: string; // ISO date string
+  endDate?: string; // ISO date string (optional, for date range)
+  
   timeSlots: string[]; // Array of time strings like "13:00"
   addressId?: string; // Optional address ID
+  recurrence?: RecurrenceConfig; // Optional recurrence configuration
 }
 
 export interface ScheduleResponse {

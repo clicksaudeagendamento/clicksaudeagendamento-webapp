@@ -6,6 +6,7 @@ import { Loading } from "@/components/ui/loading";
 import { useAppointments } from "@/contexts/AppointmentContext";
 import { timeValidation } from "@/utils/timeValidation";
 import { scheduleService } from "@/services/scheduleService";
+import { showSuccessToast, showErrorToast } from "@/lib/toast-helper";
 
 interface AdminScheduleFormProps {
   onClose: () => void;
@@ -14,15 +15,25 @@ interface AdminScheduleFormProps {
 
 export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleFormProps) => {
   const { profile, loading, addresses, selectedAddressId, setSelectedAddressId, fetchAddresses } = useAppointments();
+  const [dateMode, setDateMode] = useState<'single' | 'range'>('single');
   const [singleDate, setSingleDate] = useState('');
-  const [startTime, setStartTime] = useState('08:00');
-  const [endTime, setEndTime] = useState('17:00');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [slotDuration, setSlotDuration] = useState('30');
-  const [lunchBreak, setLunchBreak] = useState(true);
+  const [lunchBreak, setLunchBreak] = useState(false);
   const [lunchStart, setLunchStart] = useState('12:00');
   const [lunchEnd, setLunchEnd] = useState('13:00');
+  const [enableRecurrence, setEnableRecurrence] = useState(false);
+  const [recurrenceOccurrences, setRecurrenceOccurrences] = useState(3);
   const [error, setError] = useState('');
-  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState<{
+    name: string;
+    start: string;
+    end: string;
+    lunch: boolean;
+    lunchStart?: string;
+    lunchEnd?: string;
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load addresses on mount
@@ -44,17 +55,17 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
     }
   };
 
-  const generateTimeSlots = (start: string, end: string, duration: number, excludeLunch: boolean = false) => {
+  const generateTimeSlots = (preset: { start: string; end: string; lunch: boolean; lunchStart?: string; lunchEnd?: string }, duration: number) => {
     const slots = [];
-    const startTime = new Date(`2000-01-01T${start}:00`);
-    const endTime = new Date(`2000-01-01T${end}:00`);
+    const startTime = new Date(`2000-01-01T${preset.start}:00`);
+    const endTime = new Date(`2000-01-01T${preset.end}:00`);
     
     const currentTime = new Date(startTime);
     while (currentTime < endTime) {
       const timeStr = currentTime.toTimeString().slice(0, 5);
       
-      // Skip lunch break if enabled
-      if (excludeLunch && lunchBreak) {
+      // Skip lunch break if enabled in state
+      if (lunchBreak) {
         const lunchStartTime = new Date(`2000-01-01T${lunchStart}:00`);
         const lunchEndTime = new Date(`2000-01-01T${lunchEnd}:00`);
         if (currentTime >= lunchStartTime && currentTime < lunchEndTime) {
@@ -71,7 +82,15 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
   };
 
   const handleCreateSchedule = async () => {
-    if (!singleDate) return;
+    // Validate based on mode
+    if (dateMode === 'single' && !singleDate) {
+      setError('Por favor, selecione uma data');
+      return;
+    }
+    if (dateMode === 'range' && !startDate) {
+      setError('Por favor, selecione a data inicial');
+      return;
+    }
 
     // Validate address selection
     if (!selectedAddressId) {
@@ -79,16 +98,39 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
       return;
     }
     
-    // Create date at midnight in local timezone
-    const [year, month, day] = singleDate.split('-').map(Number);
+    // Validate dates
+    const dateToValidate = dateMode === 'single' ? singleDate : startDate;
+    const [year, month, day] = dateToValidate.split('-').map(Number);
     const selectedDate = new Date(year, month - 1, day, 0, 0, 0, 0);
 
-    // Validate date - only block if the selected date is before today
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of today
+    today.setHours(0, 0, 0, 0);
     
     if (selectedDate < today) {
       setError('Não é possível criar agenda para datas passadas');
+      return;
+    }
+
+    // Validate end date if in range mode
+    if (dateMode === 'range' && endDate) {
+      const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+      const endDateObj = new Date(endYear, endMonth - 1, endDay, 0, 0, 0, 0);
+      
+      if (endDateObj < selectedDate) {
+        setError('A data final deve ser posterior à data inicial');
+        return;
+      }
+    }
+
+    // Validate preset selection
+    if (!selectedPreset) {
+      setError('Por favor, selecione um modelo de horário');
+      return;
+    }
+
+    // Validate recurrence
+    if (dateMode === 'single' && enableRecurrence && recurrenceOccurrences < 1) {
+      setError('O número de repetições deve ser pelo menos 1');
       return;
     }
 
@@ -110,24 +152,71 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
     setIsSubmitting(true);
     
     try {
-      const timeSlots = generateTimeSlots(startTime, endTime, parseInt(slotDuration), lunchBreak);
+      const timeSlots = generateTimeSlots(selectedPreset, parseInt(slotDuration));
       
-      // Format date as ISO string (this will be midnight UTC)
-      const isoDate = selectedDate.toISOString();
-      
-      await scheduleService.createSchedule({
-        date: isoDate,
+      const payload: any = {
         timeSlots: timeSlots,
         addressId: selectedAddressId
-      }, token);
+      };
+
+      if (dateMode === 'single') {
+        const isoDate = selectedDate.toISOString();
+        
+        if (enableRecurrence) {
+          // Use new API with recurrence
+          payload.startDate = isoDate;
+          payload.recurrence = {
+            enabled: true,
+            dayOfWeek: selectedDate.getDay(),
+            occurrences: recurrenceOccurrences
+          };
+        } else {
+          // Legacy single date mode
+          payload.date = isoDate;
+        }
+      } else {
+        // Range mode
+        const startIsoDate = selectedDate.toISOString();
+        payload.startDate = startIsoDate;
+        
+        if (endDate) {
+          const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+          const endDateObj = new Date(endYear, endMonth - 1, endDay, 0, 0, 0, 0);
+          payload.endDate = endDateObj.toISOString();
+        }
+      }
+      
+      await scheduleService.createSchedule(payload, token);
+      
+      // Show success toast
+      if (dateMode === 'single' && enableRecurrence) {
+        showSuccessToast(
+          'Agendas criadas com sucesso!',
+          `${recurrenceOccurrences} ${recurrenceOccurrences === 1 ? 'agenda criada' : 'agendas criadas'} com recorrência`
+        );
+      } else if (dateMode === 'range' && endDate) {
+        showSuccessToast(
+          'Agendas criadas com sucesso!',
+          'Agendas criadas para o intervalo de dias selecionado'
+        );
+      } else {
+        showSuccessToast(
+          'Agenda criada com sucesso!',
+          'Horários disponíveis para agendamento'
+        );
+      }
       
       onClose();
-      // Notify parent component that a schedule was created
       if (onScheduleCreated) {
         onScheduleCreated();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao criar agenda');
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao criar agenda';
+      setError(errorMessage);
+      showErrorToast(
+        'Erro ao criar agenda',
+        errorMessage
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -136,8 +225,8 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
   const presetSchedules = [
     { name: 'Meio Período (Manhã)', start: '08:00', end: '12:00', lunch: false },
     { name: 'Meio Período (Tarde)', start: '14:00', end: '18:00', lunch: false },
-    { name: 'Período Integral', start: '08:00', end: '17:00', lunch: true },
-    { name: 'Estendido', start: '07:00', end: '19:00', lunch: true },
+    { name: 'Período Integral', start: '08:00', end: '17:00', lunch: true, lunchStart: '12:00', lunchEnd: '13:00' },
+    { name: 'Estendido', start: '07:00', end: '19:00', lunch: true, lunchStart: '12:00', lunchEnd: '13:00' },
   ];
 
   const minDate = timeValidation.getMinimumAllowedDate();
@@ -212,17 +301,21 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
             {presetSchedules.map((preset) => (
               <button
                 key={preset.name}
+                type="button"
                 onClick={() => {
-                  setStartTime(preset.start);
-                  setEndTime(preset.end);
+                  setSelectedPreset(preset);
                   setLunchBreak(preset.lunch);
-                  setSelectedPreset(preset.name);
+                  if (preset.lunchStart) setLunchStart(preset.lunchStart);
+                  if (preset.lunchEnd) setLunchEnd(preset.lunchEnd);
                 }}
-                className={`p-3 text-left border rounded-lg transition-colors ${selectedPreset === preset.name ? 'border-primary ring-2 ring-primary/30 bg-primary/10' : 'border-slate-200 hover:bg-slate-50'}`}
-                style={selectedPreset === preset.name ? { borderColor: profile.primaryColor, backgroundColor: profile.primaryColor + '10', boxShadow: `0 0 0 2px ${profile.primaryColor}33` } : {}}
+                className={`p-3 text-left border rounded-lg transition-colors ${selectedPreset?.name === preset.name ? 'border-primary ring-2 ring-primary/30 bg-primary/10' : 'border-slate-200 hover:bg-slate-50'}`}
+                style={selectedPreset?.name === preset.name ? { borderColor: profile.primaryColor, backgroundColor: profile.primaryColor + '10', boxShadow: `0 0 0 2px ${profile.primaryColor}33` } : {}}
               >
                 <div className="font-medium text-sm text-slate-800">{preset.name}</div>
-                <div className="text-xs text-slate-500">{preset.start} às {preset.end}</div>
+                <div className="text-xs text-slate-500">
+                  {preset.start} às {preset.end}
+                  {preset.lunch && <span className="ml-2 text-slate-400">• Almoço incluído</span>}
+                </div>
               </button>
             ))}
           </div>
@@ -230,39 +323,157 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
 
         {/* Date Selection */}
         <div>
-          <label className="text-sm font-semibold text-slate-800 mb-2 block">Data</label>
-          <Input
-            type="date"
-            value={singleDate}
-            onChange={(e) => setSingleDate(e.target.value)}
-            className="w-full"
-            min={minDate}
-          />
-          <p className="text-xs text-slate-500 mt-1">
-            Agendas podem ser criadas a partir de hoje ({new Date().toLocaleDateString('pt-BR')})
-          </p>
-        </div>
+          <label className="text-sm font-semibold text-slate-800 mb-2 block">Tipo de Agenda</label>
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => {
+                setDateMode('single');
+                setEnableRecurrence(false);
+              }}
+              className={`p-3 text-left border rounded-lg transition-colors ${
+                dateMode === 'single'
+                  ? 'border-primary ring-2 ring-primary/30 bg-primary/10'
+                  : 'border-slate-200 hover:bg-slate-50'
+              }`}
+              style={
+                dateMode === 'single'
+                  ? {
+                      borderColor: profile.primaryColor,
+                      backgroundColor: profile.primaryColor + '10',
+                      boxShadow: `0 0 0 2px ${profile.primaryColor}33`,
+                    }
+                  : {}
+              }
+            >
+              <div className="font-medium text-sm text-slate-800">Dia Único</div>
+              <div className="text-xs text-slate-500">Criar agenda para um dia específico</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDateMode('range');
+                setEnableRecurrence(false);
+              }}
+              className={`p-3 text-left border rounded-lg transition-colors ${
+                dateMode === 'range'
+                  ? 'border-primary ring-2 ring-primary/30 bg-primary/10'
+                  : 'border-slate-200 hover:bg-slate-50'
+              }`}
+              style={
+                dateMode === 'range'
+                  ? {
+                      borderColor: profile.primaryColor,
+                      backgroundColor: profile.primaryColor + '10',
+                      boxShadow: `0 0 0 2px ${profile.primaryColor}33`,
+                    }
+                  : {}
+              }
+            >
+              <div className="font-medium text-sm text-slate-800">Intervalo de Dias</div>
+              <div className="text-xs text-slate-500">Criar agenda para vários dias</div>
+            </button>
+          </div>
 
-        {/* Time Configuration */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-semibold text-slate-800 mb-2 block">Início</label>
-            <Input
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-semibold text-slate-800 mb-2 block">Fim</label>
-            <Input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              className="w-full"
-            />
-          </div>
+          {dateMode === 'single' ? (
+            <>
+              <label className="text-sm font-semibold text-slate-800 mb-2 block">Data</label>
+              <Input
+                type="date"
+                value={singleDate}
+                onChange={(e) => setSingleDate(e.target.value)}
+                className="w-full"
+                min={minDate}
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Agendas podem ser criadas a partir de hoje ({new Date().toLocaleDateString('pt-BR')})
+              </p>
+
+              {/* Recurrence Option for Single Date */}
+              <div className="mt-4 bg-slate-50 rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <input
+                    type="checkbox"
+                    id="enableRecurrence"
+                    checked={enableRecurrence}
+                    onChange={(e) => setEnableRecurrence(e.target.checked)}
+                    className="w-4 h-4 rounded"
+                    style={{ accentColor: profile.primaryColor }}
+                  />
+                  <label htmlFor="enableRecurrence" className="text-sm font-semibold text-slate-800">
+                    Repetir esta agenda semanalmente
+                  </label>
+                </div>
+
+                {enableRecurrence && singleDate && (
+                  <div>
+                    <label className="text-xs text-slate-600 mb-2 block">
+                      Repetir por quantas semanas? (incluindo a primeira)
+                    </label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="52"
+                      value={recurrenceOccurrences}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 1;
+                        setRecurrenceOccurrences(Math.min(Math.max(value, 1), 52));
+                      }}
+                      className="w-full"
+                      placeholder="Número de semanas"
+                    />
+                    <p className="text-xs text-slate-500 mt-2">
+                      {(() => {
+                        const [year, month, day] = singleDate.split('-').map(Number);
+                        const baseDate = new Date(year, month - 1, day);
+                        const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                        const dayName = dayNames[baseDate.getDay()];
+                        
+                        if (recurrenceOccurrences === 1) {
+                          return `Esta agenda será criada apenas para ${dayName}, ${baseDate.toLocaleDateString('pt-BR')}`;
+                        }
+                        
+                        const lastDate = new Date(baseDate);
+                        lastDate.setDate(lastDate.getDate() + (recurrenceOccurrences - 1) * 7);
+                        
+                        return `Esta agenda será criada para ${recurrenceOccurrences} ${dayName}s seguidas, de ${baseDate.toLocaleDateString('pt-BR')} até ${lastDate.toLocaleDateString('pt-BR')}`;
+                      })()}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-semibold text-slate-800 mb-2 block">Data Inicial</label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full"
+                  min={minDate}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-slate-800 mb-2 block">Data Final (Opcional)</label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full"
+                  min={startDate || minDate}
+                />
+              </div>
+              {startDate && (
+                <p className="text-xs text-slate-500 col-span-full">
+                  {endDate
+                    ? `Agendas serão criadas para todos os dias entre ${new Date(startDate).toLocaleDateString('pt-BR')} e ${new Date(endDate).toLocaleDateString('pt-BR')}`
+                    : `Agenda será criada apenas para ${new Date(startDate).toLocaleDateString('pt-BR')}`}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Slot Duration */}
@@ -322,11 +533,11 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
         </div>
 
         {/* Preview */}
-        {singleDate && (
+        {((dateMode === 'single' && singleDate) || (dateMode === 'range' && startDate)) && selectedPreset && (
           <div className="bg-slate-50 rounded-xl p-4">
             <h4 className="text-sm font-semibold text-slate-800 mb-2">Prévia dos Horários</h4>
             <div className="flex flex-wrap gap-1">
-              {generateTimeSlots(startTime, endTime, parseInt(slotDuration), lunchBreak).slice(0, 8).map((time) => (
+              {generateTimeSlots(selectedPreset, parseInt(slotDuration)).slice(0, 8).map((time) => (
                 <span
                   key={time}
                   className="px-2 py-1 text-xs rounded-md text-white"
@@ -335,9 +546,9 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
                   {time}
                 </span>
               ))}
-              {generateTimeSlots(startTime, endTime, parseInt(slotDuration), lunchBreak).length > 8 && (
+              {generateTimeSlots(selectedPreset, parseInt(slotDuration)).length > 8 && (
                 <span className="px-2 py-1 text-xs text-slate-500">
-                  +{generateTimeSlots(startTime, endTime, parseInt(slotDuration), lunchBreak).length - 8} mais
+                  +{generateTimeSlots(selectedPreset, parseInt(slotDuration)).length - 8} mais
                 </span>
               )}
             </div>
@@ -348,7 +559,13 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Button
             onClick={handleCreateSchedule}
-            disabled={!singleDate || !selectedAddressId || isSubmitting || addresses.length === 0}
+            disabled={
+              (!singleDate && !startDate) ||
+              !selectedAddressId ||
+              !selectedPreset ||
+              isSubmitting ||
+              addresses.length === 0
+            }
             className="flex-1 h-12 font-semibold text-sm sm:text-base"
             style={{ 
               backgroundColor: profile.primaryColor,

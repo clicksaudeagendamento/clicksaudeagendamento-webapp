@@ -9,6 +9,7 @@ import { scheduleService, Schedule } from "@/services/scheduleService";
 import { useAddressSelection } from "@/hooks/useAddressSelection";
 import { AddressSelectionRequired } from "./AddressSelectionRequired";
 import { DEFAULT_PRIMARY_COLOR } from "@/lib/constants";
+import { showSuccessToast, showErrorToast } from "@/lib/toast-helper";
 
 export const AdminSchedules = () => {
   const { schedules, profile, loading, canEditSchedule, selectedAddressId } = useAppointments();
@@ -154,13 +155,25 @@ export const AdminSchedules = () => {
       );
 
       await Promise.all(deletePromises);
+      
+      // Show success toast
+      showSuccessToast(
+        'Agenda excluída com sucesso!',
+        `${schedulesToDelete.length} ${schedulesToDelete.length === 1 ? 'horário excluído' : 'horários excluídos'}`
+      );
+      
       setSelectedDate(null);
       
       // Refresh the schedules after deletion
       const monthStr = String(currentDate.getMonth() + 1).padStart(2, '0');
       await fetchSchedulesByMonth(monthStr);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao excluir agenda');
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir agenda';
+      setError(errorMessage);
+      showErrorToast(
+        'Erro ao excluir agenda',
+        errorMessage
+      );
     }
   };
 
@@ -176,11 +189,23 @@ export const AdminSchedules = () => {
       }
 
       await scheduleService.deleteTimeSlot(scheduleId, token);
+      
+      // Show success toast
+      showSuccessToast(
+        'Horário excluído com sucesso!',
+        'O horário foi removido da agenda'
+      );
+      
       // Refresh the schedules after deletion
       const month = String(currentDate.getMonth() + 1).padStart(2, '0');
       await fetchSchedulesByMonth(month);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao excluir horário');
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir horário';
+      setError(errorMessage);
+      showErrorToast(
+        'Erro ao excluir horário',
+        errorMessage
+      );
     }
   };
 

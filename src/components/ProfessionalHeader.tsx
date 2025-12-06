@@ -80,8 +80,8 @@ export const ProfessionalHeader = () => {
             {profile.name.toUpperCase()}
           </h1>
           {profile.specialty && profile.specialty.trim() && profile.register && profile.register.trim() && (
-            <p className="text-base sm:text-lg mb-3 sm:mb-4" style={{ color: profile.primaryColor }}>
-              {profile.specialty} - {profile.register}
+            <p className="text-base sm:text-lg mb-3 sm:mb-4">
+              {profile.specialty.toUpperCase()} - {profile.register.toUpperCase()}
             </p>
           )}
           
