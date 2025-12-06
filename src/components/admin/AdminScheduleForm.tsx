@@ -7,6 +7,7 @@ import { useAppointments } from "@/contexts/AppointmentContext";
 import { timeValidation } from "@/utils/timeValidation";
 import { scheduleService } from "@/services/scheduleService";
 import { showSuccessToast, showErrorToast } from "@/lib/toast-helper";
+import { PLANS, PlanType } from "@/lib/constants";
 
 interface AdminScheduleFormProps {
   onClose: () => void;
@@ -52,6 +53,55 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
       return user.role;
     } catch {
       return null;
+    }
+  };
+
+  const getUserPlan = (): PlanType => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return user.plan || 'demo';
+    } catch {
+      return 'demo';
+    }
+  };
+
+  // Validate schedule creation against plan limits
+  const validateScheduleLimit = async (schedulesToCreate: number): Promise<{ allowed: boolean; message?: string }> => {
+    const userPlan = getUserPlan();
+    const planConfig = PLANS[userPlan];
+    
+    try {
+      const token = getToken();
+      if (!token) return { allowed: false, message: 'Token não encontrado' };
+
+      // For demo plan: check total schedules
+      if (!planConfig.isPeriodic && planConfig.maxSchedulesTotal !== undefined) {
+        const totalSchedules = await scheduleService.getTotalScheduleCount(token);
+        
+        if (totalSchedules + schedulesToCreate > planConfig.maxSchedulesTotal) {
+          return {
+            allowed: false,
+            message: `Limite total de agendas atingido. Plano ${planConfig.name.toUpperCase()}: ${planConfig.maxSchedulesTotal} agendas no total. Você já tem ${totalSchedules} agendas.`
+          };
+        }
+      }
+
+      // For other plans: check monthly schedules
+      if (planConfig.isPeriodic && planConfig.maxSchedulesPerMonth !== undefined) {
+        const monthlySchedules = await scheduleService.getMonthlyScheduleCount(token);
+        
+        if (monthlySchedules + schedulesToCreate > planConfig.maxSchedulesPerMonth) {
+          return {
+            allowed: false,
+            message: `Limite mensal de agendas atingido. Plano ${planConfig.name.toUpperCase()}: ${planConfig.maxSchedulesPerMonth} agendas por mês. Você já tem ${monthlySchedules} agendas este mês.`
+          };
+        }
+      }
+
+      return { allowed: true };
+    } catch (error) {
+      console.error('Error validating schedule limit:', error);
+      return { allowed: true }; // Allow if validation fails to avoid blocking
     }
   };
 
@@ -154,6 +204,25 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
     try {
       const timeSlots = generateTimeSlots(selectedPreset, parseInt(slotDuration));
       
+      // Calculate number of schedules to create
+      let schedulesToCreate = timeSlots.length;
+      if (dateMode === 'single' && enableRecurrence) {
+        schedulesToCreate = timeSlots.length * recurrenceOccurrences;
+      } else if (dateMode === 'range' && endDate) {
+        const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+        const endDateObj = new Date(endYear, endMonth - 1, endDay, 0, 0, 0, 0);
+        const daysDiff = Math.ceil((endDateObj.getTime() - selectedDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        schedulesToCreate = timeSlots.length * daysDiff;
+      }
+
+      // Validate against plan limits
+      const validation = await validateScheduleLimit(schedulesToCreate);
+      if (!validation.allowed) {
+        setError(validation.message || 'Limite de agendas atingido');
+        setIsSubmitting(false);
+        return;
+      }
+
       const payload: any = {
         timeSlots: timeSlots,
         addressId: selectedAddressId

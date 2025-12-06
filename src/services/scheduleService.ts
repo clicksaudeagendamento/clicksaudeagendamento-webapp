@@ -102,4 +102,20 @@ export const scheduleService = {
       path,
     });
   },
+
+  getTotalScheduleCount: async (token: string): Promise<number> => {
+    return apiRequest<number>({
+      method: 'GET',
+      path: '/schedules/count/total',
+      token
+    });
+  },
+
+  getMonthlyScheduleCount: async (token: string): Promise<number> => {
+    return apiRequest<number>({
+      method: 'GET',
+      path: '/schedules/count/monthly',
+      token
+    });
+  },
 }; 

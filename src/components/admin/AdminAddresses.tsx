@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { addressService, Address, CreateAddressDto, UpdateAddressDto } from "@/services/addressService";
 import { useAppointments } from "@/contexts/AppointmentContext";
-import { DEFAULT_PRIMARY_COLOR } from "@/lib/constants";
+import { DEFAULT_PRIMARY_COLOR, PLANS, PlanType } from "@/lib/constants";
 
 export const AdminAddresses = () => {
   const { profile } = useAppointments();
@@ -17,6 +17,35 @@ export const AdminAddresses = () => {
   const [editAddress, setEditAddress] = useState('');
 
   const getToken = () => localStorage.getItem('access_token') || '';
+
+  // Get user plan from profile
+  const getUserPlan = (): PlanType => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return user.plan || 'demo';
+    } catch {
+      return 'demo';
+    }
+  };
+
+  // Check if user can add more addresses
+  const canAddAddress = (): { allowed: boolean; message?: string } => {
+    const userPlan = getUserPlan();
+    const planConfig = PLANS[userPlan];
+    
+    if (planConfig.maxAddresses === 'unlimited') {
+      return { allowed: true };
+    }
+    
+    if (addresses.length >= planConfig.maxAddresses) {
+      return {
+        allowed: false,
+        message: `Você atingiu o limite de ${planConfig.maxAddresses} ${planConfig.maxAddresses === 1 ? 'endereço' : 'endereços'} do plano ${planConfig.name.toUpperCase()}`
+      };
+    }
+    
+    return { allowed: true };
+  };
 
   // Load addresses on mount
   useEffect(() => {
@@ -192,7 +221,14 @@ export const AdminAddresses = () => {
           </div>
           {!isAdding && (
             <Button
-              onClick={() => setIsAdding(true)}
+              onClick={() => {
+                const validation = canAddAddress();
+                if (!validation.allowed) {
+                  setError(validation.message || 'Limite de endereços atingido');
+                  return;
+                }
+                setIsAdding(true);
+              }}
               className="h-10 sm:h-12 px-4 sm:px-6 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm sm:text-base"
               style={{
                 backgroundColor: profile.primaryColor || DEFAULT_PRIMARY_COLOR,

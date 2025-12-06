@@ -6,6 +6,56 @@
 // Default Primary Color for Profile
 export const DEFAULT_PRIMARY_COLOR = '#3B82F6';
 
+// Plan Types
+export type PlanType = 'demo' | 'basic' | 'professional' | 'enterprise';
+
+// Plan Configuration Interface
+export interface PlanConfig {
+  name: string;
+  price: number;
+  credits: number;
+  maxSchedulesPerMonth?: number;
+  maxSchedulesTotal?: number;
+  maxAddresses: number | 'unlimited';
+  isPeriodic: boolean;
+}
+
+// Plan Constants
+export const PLANS: Record<PlanType, PlanConfig> = {
+  demo: { 
+    name: 'demo', 
+    price: 0, 
+    credits: 50, 
+    maxSchedulesTotal: 50,
+    maxAddresses: 1,
+    isPeriodic: false
+  },
+  basic: { 
+    name: 'one', 
+    price: 67, 
+    credits: 80, 
+    maxSchedulesPerMonth: 80,
+    maxAddresses: 1,
+    isPeriodic: true
+  },
+  professional: { 
+    name: 'pro', 
+    price: 99, 
+    credits: 120, 
+    maxSchedulesPerMonth: 120,
+    maxAddresses: 3,
+    isPeriodic: true
+  },
+  enterprise: { 
+    name: 'prime', 
+    price: 159, 
+    credits: 300, 
+    maxSchedulesPerMonth: 300,
+    maxAddresses: 'unlimited',
+    isPeriodic: true
+  },
+};
+
 // Color Palette
 export const COLORS = {
   primary: {
