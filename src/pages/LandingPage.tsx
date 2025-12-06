@@ -604,7 +604,7 @@ export const LandingPage = () => {
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">ClickSaúde One</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mb-4">
-                  A solução ideal para quem atende sozinho e quer organizar a agenda sem complicação
+                  Organização sem complicação para quem está começando no digital 💛
                 </p>
                 <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">R$ 69</div>
                 <p className="text-sm text-slate-600">por mês</p>
@@ -613,15 +613,15 @@ export const LandingPage = () => {
               <ul className="space-y-3 mb-6 sm:mb-8">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">Até 150 agendamentos/mês</span>
+                  <span className="text-sm sm:text-base">80 agendamentos/mês</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">Lembretes automáticos via WhatsApp</span>
+                  <span className="text-sm sm:text-base">Lembretes via WhatsApp</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">Gestão completa da sua agenda</span>
+                  <span className="text-sm sm:text-base">Gestão de agenda e pacientes</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -648,7 +648,7 @@ export const LandingPage = () => {
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">ClickSaúde Pro</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mb-4">
-                  Para profissionais que atendem em vários locais e precisam de mais capacidade
+                  Mais flexibilidade, mais consultas e mais crescimento 🚀
                 </p>
                 <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">R$ 99</div>
                 <p className="text-sm text-slate-600">por mês</p>
@@ -657,7 +657,7 @@ export const LandingPage = () => {
               <ul className="space-y-3 mb-6 sm:mb-8">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">300 agendamentos/mês</span>
+                  <span className="text-sm sm:text-base">120 agendamentos/mês</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -688,9 +688,9 @@ export const LandingPage = () => {
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">ClickSaúde Prime</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mb-4">
-                  Para profissionais com alta demanda e atuação em múltiplos espaços de saúde
+                  Performance máxima para quem precisa de total liberdade ⚡
                 </p>
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">R$ 139</div>
+                <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">R$ 159</div>
                 <p className="text-sm text-slate-600">por mês</p>
               </div>
 
@@ -705,7 +705,7 @@ export const LandingPage = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">Gestão completa da agenda</span>
+                  <span className="text-sm sm:text-base">Pacientes ilimitados</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -717,7 +717,7 @@ export const LandingPage = () => {
                 </li>
               </ul>
 
-              <p className="text-sm italic text-slate-600 mb-4 text-center">Máxima liberdade para expandir seus atendimentos</p>
+              <p className="text-sm italic text-slate-600 mb-4 text-center">Para profissionais com grande demanda e presença em múltiplos serviços</p>
             </div>
           </div>
 
