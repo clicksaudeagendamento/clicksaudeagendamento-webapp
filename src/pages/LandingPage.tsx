@@ -613,7 +613,7 @@ export const LandingPage = () => {
               <ul className="space-y-3 mb-6 sm:mb-8">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">80 agendamentos/mês</span>
+                  <span className="text-sm sm:text-base">Até 80 agendamentos/mês</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -657,7 +657,7 @@ export const LandingPage = () => {
               <ul className="space-y-3 mb-6 sm:mb-8">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">120 agendamentos/mês</span>
+                  <span className="text-sm sm:text-base">Até 120 agendamentos/mês</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -705,7 +705,7 @@ export const LandingPage = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">Pacientes ilimitados</span>
+                  <span className="text-sm sm:text-base">Gestão de agenda e pacientes</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
