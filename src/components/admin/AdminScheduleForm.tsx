@@ -627,6 +627,14 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="flex-1 h-12 bg-white border-slate-200 text-slate-600 hover:bg-slate-50 text-sm sm:text-base"
+          >
+            Cancelar
+          </Button>
+          <Button
             onClick={handleCreateSchedule}
             disabled={
               (!singleDate && !startDate) ||
@@ -649,14 +657,6 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
                 Criar Agenda
               </>
             )}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="flex-1 h-12 bg-white border-slate-200 text-slate-600 hover:bg-slate-50 text-sm sm:text-base"
-          >
-            Cancelar
           </Button>
         </div>
       </div>
