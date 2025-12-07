@@ -317,6 +317,7 @@ export const AdminProfile = () => {
               <Input
                 value={formData.specialty}
                 onChange={(e) => handleInputChange('specialty', e.target.value)}
+                placeholder="Medicina do Trabalho, Cardiologia, etc."
                 className="w-full bg-white border-slate-200 h-12"
                 required
               />
@@ -326,6 +327,7 @@ export const AdminProfile = () => {
               <Input
                 value={formData.register}
                 onChange={(e) => handleInputChange('register', e.target.value)}
+                placeholder="CRM 123456, CRO 654321, etc."
                 className="w-full bg-white border-slate-200 h-12"
                 required
               />
@@ -338,6 +340,7 @@ export const AdminProfile = () => {
               <Input
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
+                placeholder="(11) 91234-5678"
                 className={`w-full bg-white border-slate-200 h-12 ${!phoneValid ? 'border-red-500' : ''}`}
                 maxLength={15}
                 required
@@ -351,6 +354,7 @@ export const AdminProfile = () => {
               <Input
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="exemplo@dominio.com"
                 className={`w-full bg-white border-slate-200 h-12 ${!emailValid ? 'border-red-500' : ''}`}
                 required
               />
@@ -370,7 +374,6 @@ export const AdminProfile = () => {
               className="w-full bg-white border-slate-200 min-h-[120px] resize-none"
               rows={5}
             />
-            <p className="text-xs text-slate-500">Esta descrição será exibida para seus pacientes</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
