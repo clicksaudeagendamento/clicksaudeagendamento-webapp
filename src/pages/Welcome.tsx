@@ -119,13 +119,18 @@ export const Welcome = () => {
 
   const handleVerificationSuccess = () => {
     setShowVerification(false);
+    // Limpa as flags de registro
+    sessionStorage.removeItem('justRegistered');
+    sessionStorage.removeItem('registeredPhone');
+    
     toast({
       title: "Sucesso",
       description: "Cadastro confirmado com sucesso! Você já pode fazer login.",
       variant: "success",
     });
+    
     setTimeout(() => {
-      navigate('/login');
+      navigate('/login', { replace: true });
     }, 1500);
   };
 
@@ -253,7 +258,7 @@ export const Welcome = () => {
               </p>
               <div className="p-2 sm:p-3 bg-white rounded-lg border border-pink-200 overflow-x-auto">
                 <code className="text-xs sm:text-sm text-pink-600 font-mono break-all">
-                  clicksaudeagendamento.com/crm-123456/agendamento
+                  https://www.clicksaudeagendamento.com.br/8473cd2cbc511abe2cbf4676/agendamento
                 </code>
               </div>
             </div>
