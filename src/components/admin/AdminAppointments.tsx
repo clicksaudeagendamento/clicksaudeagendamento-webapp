@@ -549,13 +549,13 @@ const CancelAppointmentModal = ({ onConfirm, patientName, appointmentDate, appoi
               <Button
                 variant="outline"
                 onClick={() => setIsOpen(false)}
-                className="flex-1"
+                className="flex-1 bg-white border-slate-200"
               >
                 Não, manter
               </Button>
               <Button
                 onClick={handleConfirm}
-                className="flex-1 bg-red-600 text-white hover:bg-red-700"
+                className="flex-1 bg-red-600 text-white hover:bg-red-700 border-red-600"
               >
                 Sim, cancelar
               </Button>
