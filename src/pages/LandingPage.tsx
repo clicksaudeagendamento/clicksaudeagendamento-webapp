@@ -117,8 +117,9 @@ export const LandingPage = () => {
 
       await userService.registerUser(payload)
 
-      // Define a flag no sessionStorage indicando que o usuário acabou de se cadastrar
+      // Armazena o telefone do usuário para o processo de verificação
       sessionStorage.setItem('justRegistered', 'true')
+      sessionStorage.setItem('registeredPhone', formData.phone.replace(/\D/g, ''))
 
       toast({
         title: "Cadastro realizado!",

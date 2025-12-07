@@ -2,26 +2,40 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Calendar, Clock, Settings, Eye, ArrowRight, Users, Link as LinkIcon } from "lucide-react";
+import { CodeVerificationForm } from "@/components/CodeVerificationForm";
+import { authService } from "@/services/authService";
+import { useToast } from "@/hooks/use-toast";
 
 export const Welcome = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
+  const [showVerification, setShowVerification] = useState(false);
+  const [userPhone, setUserPhone] = useState("");
   const totalSteps = 5;
 
-  // Limpa a flag de registro quando o componente é montado
+  // Verifica se o usuário acabou de se registrar e precisa verificar o código
   useEffect(() => {
-    // Remove a flag após um pequeno delay para garantir que o componente foi renderizado
-    const timer = setTimeout(() => {
-      sessionStorage.removeItem('justRegistered');
-    }, 500);
+    const justRegistered = sessionStorage.getItem('justRegistered');
+    const registeredPhone = sessionStorage.getItem('registeredPhone');
+    
+    if (justRegistered === 'true' && registeredPhone) {
+      setUserPhone(registeredPhone);
+    }
+  }, []);
 
-    return () => clearTimeout(timer);
+  // Limpa a flag de registro quando o componente é desmontado
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem('justRegistered');
+      sessionStorage.removeItem('registeredPhone');
+    };
   }, []);
 
   const steps = [
     {
       id: 1,
-      title: "Bem-vindo ao ClickSaúde!",
+      title: "Bem-vindo ao ClickSaúde Agendamento!",
       description: "Parabéns! Sua conta foi criada com sucesso. Agora você tem 5 agendamentos grátis para testar nossa plataforma.",
       icon: CheckCircle,
       color: "text-green-600",
@@ -75,9 +89,60 @@ export const Welcome = () => {
     }
   };
 
-  const handleLogin = () => {
-    navigate('/profissional/admin');
+  const handleSendVerificationCode = async () => {
+    if (!userPhone) {
+      toast({
+        title: "Erro",
+        description: "Telefone não encontrado",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await authService.sendVerificationCode(userPhone);
+      setShowVerification(true);
+      toast({
+        title: "Sucesso",
+        description: "Código enviado via WhatsApp!",
+        variant: "success",
+      });
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || "Erro ao enviar código de verificação";
+      toast({
+        title: "Erro",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
+
+  const handleVerificationSuccess = () => {
+    setShowVerification(false);
+    toast({
+      title: "Sucesso",
+      description: "Cadastro confirmado com sucesso! Você já pode fazer login.",
+      variant: "success",
+    });
+    setTimeout(() => {
+      navigate('/login');
+    }, 1500);
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
+  // Se precisa mostrar verificação, renderiza o componente de verificação
+  if (showVerification && userPhone) {
+    return (
+      <CodeVerificationForm
+        phone={userPhone}
+        onVerificationSuccess={handleVerificationSuccess}
+        onBack={() => setShowVerification(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center p-2 sm:p-4">
@@ -223,13 +288,23 @@ export const Welcome = () => {
           </div>
           
           {currentStep === totalSteps ? (
-            <Button
-              onClick={handleLogin}
-              className="bg-primary text-white hover:bg-primary/90 text-sm sm:text-base px-3 sm:px-4"
-            >
-              Fazer Login
-              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-            </Button>
+            userPhone ? (
+              <Button
+                onClick={handleSendVerificationCode}
+                className="bg-primary text-white hover:bg-primary/90 text-sm sm:text-base px-3 sm:px-4"
+              >
+                Confirmar Cadastro
+                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleLogin}
+                className="bg-primary text-white hover:bg-primary/90 text-sm sm:text-base px-3 sm:px-4"
+              >
+                Fazer Login
+                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+              </Button>
+            )
           ) : (
             <Button
               onClick={handleNext}

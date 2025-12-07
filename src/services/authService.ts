@@ -58,5 +58,21 @@ export const authService = {
     } catch {
       return null;
     }
+  },
+
+  sendVerificationCode: async (phone: string): Promise<{ message: string }> => {
+    return apiRequest<{ message: string }>({
+      method: 'POST',
+      path: '/auth/send-verification-code',
+      data: { phone }
+    });
+  },
+
+  verifyCode: async (phone: string, code: string): Promise<{ message: string; success: boolean }> => {
+    return apiRequest<{ message: string; success: boolean }>({
+      method: 'POST',
+      path: '/auth/verify-code',
+      data: { phone, code }
+    });
   }
 }; 
