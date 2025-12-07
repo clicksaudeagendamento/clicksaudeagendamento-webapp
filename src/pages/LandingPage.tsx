@@ -18,6 +18,8 @@ import {
   Smartphone,
   Star,
   Zap,
+  TrendingUp,
+  Users,
 } from "lucide-react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
@@ -158,216 +160,287 @@ export const LandingPage = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary to-primary/80 text-white relative overflow-hidden">
+      <section
+        className="relative overflow-hidden"
+        style={{ background: "linear-gradient(135deg, #8F9FFF 0%, #7A8EFF 50%, #6B7EF5 100%)" }}
+      >
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-200 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse"></div>
+          <div
+            className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-200 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: "1s" }}
+          ></div>
+          <div
+            className="absolute top-1/2 left-1/2 w-64 h-64 bg-purple-200 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: "2s" }}
+          ></div>
         </div>
 
         <div className="container mx-auto px-4 py-8 sm:py-12 md:py-16 lg:py-20 relative z-10">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
-                <Zap className="w-4 h-4" />
-                <span className="text-xs sm:text-sm font-medium">🎁 Ganhe 50 Agendamentos GRÁTIS</span>
+            <div className="text-center lg:text-left space-y-6">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400/40 to-yellow-400/40 backdrop-blur-sm px-4 py-2.5 rounded-full border border-amber-300/60 shadow-xl animate-bounce">
+                <Zap className="w-5 h-5 text-amber-900" />
+                <span className="text-sm font-bold text-amber-950">🎁 Ganhe 50 Agendamentos GRÁTIS</span>
               </div>
 
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 leading-tight">
-                Sistema de Agendamento
-                <span className="block text-blue-200 mt-2">para Profissionais da Saúde</span>
-              </h1>
+              <div>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight text-balance text-white">
+                  Transforme sua Agenda em Resultados
+                </h1>
 
-              <p className="text-xs sm:text-sm md:text-base lg:text-lg mb-4 text-blue-100 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                Design inteligente e adaptável, gestão completa de atendimentos e lembretes automáticos via WhatsApp
-              </p>
-
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-5 mb-6 border border-white/20 shadow-xl max-w-2xl mx-auto lg:mx-0">
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-200 flex-shrink-0" />
-                    <p className="text-xs sm:text-sm text-left">
-                      <span className="font-bold text-white">Planos Pré-Pagos</span> - Zero burocracia, você escolhe o
-                      que precisa
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-200 flex-shrink-0" />
-                    <p className="text-xs sm:text-sm text-left">
-                      <span className="font-bold text-white">Múltiplos Endereços</span> - Gerencie agendas de diferentes
-                      locais
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-200 flex-shrink-0" />
-                    <p className="text-xs sm:text-sm text-left">
-                      <span className="font-bold text-white">Para Todos os Perfis</span> - Do iniciante ao grande
-                      consultório
-                    </p>
-                  </div>
-                </div>
+                <p className="text-base sm:text-lg md:text-xl mb-6 text-white leading-relaxed max-w-2xl mx-auto lg:mx-0 text-pretty">
+                  O sistema de agendamento mais completo para profissionais da saúde que querem crescer com organização
+                  e inteligência
+                </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8 max-w-md mx-auto lg:mx-0">
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold">500+</div>
-                  <div className="text-xs text-blue-200">Profissionais</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold">15k+</div>
-                  <div className="text-xs text-blue-200">Agendamentos</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold">98%</div>
-                  <div className="text-xs text-blue-200">Satisfação</div>
-                </div>
-              </div>
-
-              {/* <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start max-w-md mx-auto lg:mx-0 lg:max-w-none">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto bg-white text-primary hover:bg-blue-50 text-sm sm:text-base md:text-lg px-6 sm:px-8 py-3 h-auto shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
-                  onClick={() => setDemoOpen(true)}
-                >
-                  Ver Demonstração
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-                <Dialog open={demoOpen} onOpenChange={setDemoOpen}>
-                  <DialogContent className="w-[calc(100vw-2rem)] max-w-3xl bg-white p-4 sm:p-6 flex flex-col items-center mx-auto">
-                    <DialogHeader>
-                      <DialogTitle className="text-base sm:text-lg">Veja a Demonstração</DialogTitle>
-                    </DialogHeader>
-                    <div className="w-full bg-transparent flex justify-center" style={{ aspectRatio: "16/9" }}>
-                      <iframe
-                        width="100%"
-                        height="100%"
-                        src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                        title="Demonstração do Sistema"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="rounded-lg"
-                      ></iframe>
+              <div className="bg-white/15 backdrop-blur-md rounded-2xl p-5 border border-white/30 shadow-2xl max-w-2xl mx-auto lg:mx-0">
+                <div className="grid sm:grid-cols-3 gap-4 text-center sm:text-left">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-400 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
+                      <CheckCircle className="w-5 h-5 text-emerald-900" />
                     </div>
-                    <DialogClose asChild>
-                      <Button variant="outline" className="mt-4 w-full bg-transparent">
-                        Fechar
-                      </Button>
-                    </DialogClose>
-                  </DialogContent>
-                </Dialog>
-              </div> */}
+                    <div>
+                      <p className="font-bold text-white text-sm">Sem Burocracia</p>
+                      <p className="text-xs text-white/90">Planos pré-pagos</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
+                      <MessageCircle className="w-5 h-5 text-cyan-900" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-white text-sm">WhatsApp Auto</p>
+                      <p className="text-xs text-white/90">Lembretes inteligentes</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-fuchsia-400 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
+                      <TrendingUp className="w-5 h-5 text-fuchsia-900" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-white text-sm">Multi-locais</p>
+                      <p className="text-xs text-white/90">Gestão completa</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-6 max-w-md mx-auto lg:mx-0 pt-4">
+                <div className="text-center transform hover:scale-110 transition-transform duration-300">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <Users className="w-5 h-5 text-white/90" />
+                    <div className="text-3xl font-bold text-white">500+</div>
+                  </div>
+                  <div className="text-xs text-white/90">Profissionais Ativos</div>
+                </div>
+                <div className="text-center transform hover:scale-110 transition-transform duration-300">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <Calendar className="w-5 h-5 text-white/90" />
+                    <div className="text-3xl font-bold text-white">15k+</div>
+                  </div>
+                  <div className="text-xs text-white/90">Agendamentos</div>
+                </div>
+                <div className="text-center transform hover:scale-110 transition-transform duration-300">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <Star className="w-5 h-5 text-white/90" />
+                    <div className="text-3xl font-bold text-white">98%</div>
+                  </div>
+                  <div className="text-xs text-white/90">Satisfação</div>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-5 sm:p-6 md:p-8 text-slate-800 border-t-4 border-primary max-w-md mx-auto lg:max-w-none w-full">
-              <div className="text-center mb-5 sm:mb-6">
-                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-primary/10 rounded-full mb-3">
-                  <Award className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+            <div
+              className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 text-slate-800 border-t-4 max-w-md mx-auto lg:max-w-none w-full transform hover:shadow-3xl transition-shadow duration-300"
+              style={{ borderTopColor: "#8F9FFF" }}
+            >
+              <div className="text-center mb-6">
+                <div
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg"
+                  style={{ background: "linear-gradient(135deg, #8F9FFF 0%, #7A8EFF 100%)" }}
+                >
+                  <Award className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold mb-2">Cadastre-se Agora</h2>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Após usar seus <span className="font-bold text-primary">50 agendamentos gratuitos</span>, escolha o{" "}
-                  <span className="font-bold text-green-600">plano ideal</span> para você.
-                  <span className="block mt-1 font-semibold text-slate-800">
-                    Cancele quando quiser, sem multa ou burocracia
+                <h2
+                  className="text-2xl sm:text-3xl font-bold mb-3 bg-clip-text text-transparent"
+                  style={{ backgroundImage: "linear-gradient(135deg, #8F9FFF 0%, #6B7EF5 100%)" }}
+                >
+                  Comece Grátis Agora
+                </h2>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  <span className="font-bold" style={{ color: "#8F9FFF" }}>
+                    50 agendamentos gratuitos
+                  </span>{" "}
+                  para você conhecer o sistema
+                  <span className="block mt-2 text-xs text-slate-500">
+                    ✓ Sem cartão de crédito • ✓ Cancele quando quiser
                   </span>
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="name" className="text-sm font-medium block mb-1.5">
-                    Nome
+                  <Label htmlFor="name" className="text-sm font-semibold block mb-2 text-slate-700">
+                    Nome Completo
                   </Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="Digite seu nome"
-                    className="h-11 sm:h-12 text-sm sm:text-base border-slate-300 focus:border-primary w-full"
+                    placeholder="Dr(a). Seu Nome"
+                    className="h-12 text-base border-slate-300 w-full transition-all"
+                    style={
+                      {
+                        "--tw-ring-color": "#8F9FFF33",
+                      } as React.CSSProperties
+                    }
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "#8F9FFF"
+                      e.target.style.boxShadow = "0 0 0 3px rgba(143, 159, 255, 0.2)"
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = ""
+                      e.target.style.boxShadow = ""
+                    }}
                     required
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="email" className="text-sm font-medium block mb-1.5">
-                    E-mail
+                  <Label htmlFor="email" className="text-sm font-semibold block mb-2 text-slate-700">
+                    E-mail Profissional
                   </Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    placeholder="Digite seu e-mail"
-                    className={`h-11 sm:h-12 text-sm sm:text-base border-slate-300 focus:border-primary w-full ${!emailValid ? "border-red-500" : ""}`}
+                    placeholder="seu@email.com"
+                    className={`h-12 text-base border-slate-300 w-full transition-all ${!emailValid ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""}`}
+                    onFocus={(e) => {
+                      if (emailValid) {
+                        e.target.style.borderColor = "#8F9FFF"
+                        e.target.style.boxShadow = "0 0 0 3px rgba(143, 159, 255, 0.2)"
+                      }
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = ""
+                      e.target.style.boxShadow = ""
+                    }}
                     required
                   />
-                  {!emailValid && <span className="text-red-500 text-xs sm:text-sm block mt-1.5">E-mail inválido</span>}
+                  {!emailValid && (
+                    <span className="text-red-500 text-sm block mt-1.5 flex items-center gap-1">⚠️ E-mail inválido</span>
+                  )}
                 </div>
 
                 <div>
-                  <Label htmlFor="phone" className="text-sm font-medium block mb-1.5">
-                    Telefone
+                  <Label htmlFor="phone" className="text-sm font-semibold block mb-2 text-slate-700">
+                    WhatsApp
                   </Label>
                   <Input
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
                     placeholder="(11) 99999-9999"
-                    className={`h-11 sm:h-12 text-sm sm:text-base border-slate-300 focus:border-primary w-full ${!phoneValid ? "border-red-500" : ""}`}
+                    className={`h-12 text-base border-slate-300 w-full transition-all ${!phoneValid ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""}`}
                     maxLength={15}
+                    onFocus={(e) => {
+                      if (phoneValid) {
+                        e.target.style.borderColor = "#8F9FFF"
+                        e.target.style.boxShadow = "0 0 0 3px rgba(143, 159, 255, 0.2)"
+                      }
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = ""
+                      e.target.style.boxShadow = ""
+                    }}
                     required
                   />
                   {!phoneValid && (
-                    <span className="text-red-500 text-xs sm:text-sm block mt-1.5">
-                      Telefone deve conter 11 dígitos numéricos
+                    <span className="text-red-500 text-sm block mt-1.5 flex items-center gap-1">
+                      ⚠️ Telefone deve conter 11 dígitos
                     </span>
                   )}
                 </div>
 
-                <div>
-                  <Label htmlFor="password" className="text-sm font-medium block mb-1.5">
-                    Senha
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
-                    placeholder="Digite sua senha"
-                    className={`h-11 sm:h-12 text-sm sm:text-base border-slate-300 focus:border-primary w-full ${!passwordsMatch ? "border-red-500" : ""}`}
-                    required
-                  />
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="password" className="text-sm font-semibold block mb-2 text-slate-700">
+                      Senha
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange("password", e.target.value)}
+                      placeholder="••••••••"
+                      className={`h-12 text-base border-slate-300 w-full transition-all ${!passwordsMatch ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""}`}
+                      onFocus={(e) => {
+                        if (passwordsMatch) {
+                          e.target.style.borderColor = "#8F9FFF"
+                          e.target.style.boxShadow = "0 0 0 3px rgba(143, 159, 255, 0.2)"
+                        }
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = ""
+                        e.target.style.boxShadow = ""
+                      }}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword" className="text-sm font-semibold block mb-2 text-slate-700">
+                      Confirmar
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                      placeholder="••••••••"
+                      className={`h-12 text-base border-slate-300 w-full transition-all ${!passwordsMatch ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""}`}
+                      onFocus={(e) => {
+                        if (passwordsMatch) {
+                          e.target.style.borderColor = "#8F9FFF"
+                          e.target.style.boxShadow = "0 0 0 3px rgba(143, 159, 255, 0.2)"
+                        }
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = ""
+                        e.target.style.boxShadow = ""
+                      }}
+                      required
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium block mb-1.5">
-                    Confirmar Senha
-                  </Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                    placeholder="Confirme sua senha"
-                    className={`h-11 sm:h-12 text-sm sm:text-base border-slate-300 focus:border-primary w-full ${!passwordsMatch ? "border-red-500" : ""}`}
-                    required
-                  />
-                  {!passwordsMatch && (
-                    <span className="text-red-500 text-xs sm:text-sm block mt-1.5">As senhas não coincidem</span>
-                  )}
-                </div>
+                {!passwordsMatch && (
+                  <span className="text-red-500 text-sm block flex items-center gap-1">⚠️ As senhas não coincidem</span>
+                )}
 
                 <Button
                   type="submit"
-                  className="w-full h-11 sm:h-12 text-sm sm:text-base md:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] group"
+                  className="w-full h-14 text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] group text-white"
+                  style={{
+                    background: "linear-gradient(135deg, #8F9FFF 0%, #7A8EFF 100%)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "linear-gradient(135deg, #7A8EFF 0%, #6B7EF5 100%)"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "linear-gradient(135deg, #8F9FFF 0%, #7A8EFF 100%)"
+                  }}
                   disabled={!isFormFilled}
                 >
-                  Criar Conta e Solicitar Teste Grátis
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  Começar Gratuitamente Agora
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
 
-                <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-slate-500 pt-2">
-                  <Shield className="w-4 h-4" />
-                  <span>Seus dados estão seguros conosco</span>
+                <div className="flex items-center justify-center gap-2 text-sm text-slate-500 pt-2">
+                  <Shield className="w-4 h-4 text-green-600" />
+                  <span>Seus dados estão 100% seguros</span>
                 </div>
               </form>
             </div>
