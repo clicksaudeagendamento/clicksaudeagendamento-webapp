@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from "@/components/ui/toaster";
 import { AppointmentProvider } from "@/contexts/AppointmentContext";
 import { SEO } from "@/components/SEO";
+import { ProtectedWelcomeRoute } from "@/components/ProtectedWelcomeRoute";
 import { LandingPage } from "@/pages/LandingPage";
 import { Welcome } from "@/pages/Welcome";
 import { ProfessionalBooking } from "@/pages/ProfessionalBooking";
@@ -22,7 +23,11 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<AdminLoginPage />} />
-            <Route path="/boas-vindas" element={<Welcome />} />
+            <Route path="/boas-vindas" element={
+              <ProtectedWelcomeRoute>
+                <Welcome />
+              </ProtectedWelcomeRoute>
+            } />
             <Route path="/agendamento" element={<Index />} />
             <Route path="/:userId/agendamento" element={<ProfessionalBooking />} />
             <Route path="/profissional/admin" element={<ProfessionalAdmin />} />

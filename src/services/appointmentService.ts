@@ -44,6 +44,7 @@ export interface Appointment {
   __v: number;
   scheduleId: string;
   scheduleDateTime: string;
+  addressId?: string;
   professional: Professional;
 }
 
@@ -72,10 +73,13 @@ export const appointmentService = {
     });
   },
 
-  getAppointmentsByMonth: async (month: string, token: string): Promise<Appointment[]> => {
+  getAppointmentsByMonth: async (month: string, token: string, addressId?: string): Promise<Appointment[]> => {
+    const path = addressId 
+      ? `/appointments?month=${month}&addressId=${addressId}`
+      : `/appointments?month=${month}`;
     return apiRequest<Appointment[]>({
       method: 'GET',
-      path: `/appointments?month=${month}`,
+      path,
       token
     });
   }

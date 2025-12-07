@@ -37,7 +37,7 @@ export const AdminLogin = ({ onLogin, error: externalError }: AdminLoginProps) =
               <Lock className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-800 mb-2">
-              Acesso Administrativo
+              ClickSaúde Agendamento
             </h1>
             <p className="text-slate-600">
               Entre com suas credenciais
@@ -48,14 +48,14 @@ export const AdminLogin = ({ onLogin, error: externalError }: AdminLoginProps) =
             <div className="space-y-2">
               <Label htmlFor="username" className="flex items-center gap-2 text-slate-700 font-medium">
                 <User className="w-4 h-4 text-primary" />
-                Usuário
+                E-mail
               </Label>
               <Input
                 id="username"
                 type="text"
                 value={formData.username}
                 onChange={(e) => handleInputChange('username', e.target.value)}
-                placeholder="Digite seu usuário"
+                placeholder="seu@email.com"
                 className="bg-white border-slate-200 h-12"
                 required
               />

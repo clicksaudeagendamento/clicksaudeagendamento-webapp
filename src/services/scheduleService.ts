@@ -1,8 +1,22 @@
 import { apiRequest } from './api';
 
+export interface RecurrenceConfig {
+  enabled: boolean;
+  dayOfWeek?: number; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  occurrences?: number; // Number of times to repeat (e.g., 3 for 3 weeks)
+}
+
 export interface CreateSchedulePayload {
-  date: string; // ISO date string
+  // Legacy support
+  date?: string; // ISO date string
+  
+  // New fields
+  startDate?: string; // ISO date string
+  endDate?: string; // ISO date string (optional, for date range)
+  
   timeSlots: string[]; // Array of time strings like "13:00"
+  addressId?: string; // Optional address ID
+  recurrence?: RecurrenceConfig; // Optional recurrence configuration
 }
 
 export interface ScheduleResponse {
@@ -68,18 +82,40 @@ export const scheduleService = {
     });
   },
 
-  getSchedulesByMonth: async (month: string, token: string): Promise<Schedule[]> => {
+  getSchedulesByMonth: async (month: string, token: string, addressId?: string): Promise<Schedule[]> => {
+    const path = addressId 
+      ? `/schedules?month=${month}&addressId=${addressId}`
+      : `/schedules?month=${month}`;
     return apiRequest<Schedule[]>({
       method: 'GET',
-      path: `/schedules?month=${month}`,
+      path,
       token
     });
   },
 
-  getPublicSchedules: async (userId: string, month: number, year: number): Promise<PublicSchedule[]> => {
+  getPublicSchedules: async (userId: string, month: number, year: number, addressId?: string): Promise<PublicSchedule[]> => {
+    const path = addressId
+      ? `/schedules/public?userId=${userId}&month=${month}&year=${year}&addressId=${addressId}`
+      : `/schedules/public?userId=${userId}&month=${month}&year=${year}`;
     return apiRequest<PublicSchedule[]>({
       method: 'GET',
-      path: `/schedules/public?userId=${userId}&month=${month}&year=${year}`,
+      path,
+    });
+  },
+
+  getTotalScheduleCount: async (token: string): Promise<number> => {
+    return apiRequest<number>({
+      method: 'GET',
+      path: '/schedules/count/total',
+      token
+    });
+  },
+
+  getMonthlyScheduleCount: async (token: string): Promise<number> => {
+    return apiRequest<number>({
+      method: 'GET',
+      path: '/schedules/count/monthly',
+      token
     });
   },
 }; 

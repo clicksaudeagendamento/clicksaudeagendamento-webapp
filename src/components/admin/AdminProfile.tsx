@@ -3,17 +3,22 @@ import { useState, useEffect } from "react";
 import { Save, User, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useAppointments } from "@/contexts/AppointmentContext";
+import { useToast } from "@/hooks/use-toast";
 
 export const AdminProfile = () => {
   const { profile, updateProfile, updatePrimaryColor, fetchUserProfile } = useAppointments();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({ ...profile, email: profile.email || '' });
   const [emailValid, setEmailValid] = useState(true);
   const [phoneValid, setPhoneValid] = useState(true);
   const [allFilled, setAllFilled] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const isEditing = true;
 
@@ -86,8 +91,6 @@ export const AdminProfile = () => {
       formData.specialty,
       formData.register,
       formData.phone,
-      formData.address,
-      formData.workingHours,
       formData.email
     ];
     const all = requiredFields.every((v) => v && v.trim() !== '');
@@ -96,7 +99,21 @@ export const AdminProfile = () => {
       validateEmail(formData.email) &&
       validatePhone(formData.phone.replace(/\D/g, ''))
     );
-  }, [formData]);
+
+    // Check if there are changes compared to original profile
+    const changed = 
+      formData.name !== profile.name ||
+      formData.specialty !== profile.specialty ||
+      formData.register !== profile.register ||
+      formData.phone !== profile.phone ||
+      formData.email !== profile.email ||
+      (formData.description || '') !== (profile.description || '') ||
+      (formData.website || '') !== (profile.website || '') ||
+      (formData.instagram || '') !== (profile.instagram || '') ||
+      (formData.profileImage || '') !== (profile.profileImage || '');
+    
+    setHasChanges(changed);
+  }, [formData, profile]);
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     if (field === 'email') setEmailValid(true);
@@ -107,7 +124,7 @@ export const AdminProfile = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validate before save
     if (!validateEmail(formData.email)) {
       setEmailValid(false);
@@ -117,9 +134,31 @@ export const AdminProfile = () => {
       setPhoneValid(false);
       return;
     }
-    updateProfile(formData);
-    if (formData.primaryColor !== profile.primaryColor) {
-      updatePrimaryColor(formData.primaryColor);
+
+    setIsSaving(true);
+    try {
+      await updateProfile(formData);
+      if (formData.primaryColor !== profile.primaryColor) {
+        updatePrimaryColor(formData.primaryColor);
+      }
+      
+      // Show success toast
+      toast({
+        title: "Perfil atualizado!",
+        description: "Suas informações foram atualizadas com sucesso.",
+        variant: "success",
+      });
+      
+      setHasChanges(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Erro ao atualizar",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao atualizar o perfil.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -127,6 +166,7 @@ export const AdminProfile = () => {
     setFormData(prev => ({ ...prev, ...profile, email: profile.email || prev.email || '' }));
     setEmailValid(true);
     setPhoneValid(true);
+    setHasChanges(false);
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -201,7 +241,7 @@ export const AdminProfile = () => {
             </div>
             {isEditing && (
               <div className="flex gap-2">
-                {/* <label htmlFor="photo-upload">
+                <label htmlFor="photo-upload">
                   <Button
                     type="button"
                     variant="outline"
@@ -212,7 +252,7 @@ export const AdminProfile = () => {
                     <Camera className="w-4 h-4" />
                     Alterar Foto
                   </Button>
-                </label> */}
+                </label>
                 <input
                   id="photo-upload"
                   type="file"
@@ -223,6 +263,41 @@ export const AdminProfile = () => {
                 />
               </div>
             )}
+          </div>
+
+          {/* Appointment Link Section */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700 text-center block">
+              Link de Agendamento
+            </label>
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-xs text-slate-500 text-center">
+                Compartilhe este link com seus pacientes para que eles possam visualizar suas agendas e criar agendamentos
+              </p>
+              
+              <div className="flex items-center gap-2 w-full max-w-2xl">
+                <Input
+                  value={`https://www.clicksaudeagendamento.com.br/${profile.id}/agendamento`}
+                  readOnly
+                  className="w-full bg-slate-50 border-slate-200 h-12 text-sm"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://www.clicksaudeagendamento.com.br/${profile.id}/agendamento`);
+                    toast({
+                      title: "Link copiado!",
+                      description: "O link foi copiado para a área de transferência.",
+                      variant: "success",
+                    });
+                  }}
+                  className="bg-white border-slate-200 h-12 px-4 whitespace-nowrap"
+                >
+                  Copiar Link
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Basic Information */}
@@ -242,6 +317,7 @@ export const AdminProfile = () => {
               <Input
                 value={formData.specialty}
                 onChange={(e) => handleInputChange('specialty', e.target.value)}
+                placeholder="Medicina do Trabalho, Cardiologia, etc."
                 className="w-full bg-white border-slate-200 h-12"
                 required
               />
@@ -251,6 +327,7 @@ export const AdminProfile = () => {
               <Input
                 value={formData.register}
                 onChange={(e) => handleInputChange('register', e.target.value)}
+                placeholder="CRM 123456, CRO 654321, etc."
                 className="w-full bg-white border-slate-200 h-12"
                 required
               />
@@ -263,6 +340,7 @@ export const AdminProfile = () => {
               <Input
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
+                placeholder="(11) 91234-5678"
                 className={`w-full bg-white border-slate-200 h-12 ${!phoneValid ? 'border-red-500' : ''}`}
                 maxLength={15}
                 required
@@ -276,6 +354,7 @@ export const AdminProfile = () => {
               <Input
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="exemplo@dominio.com"
                 className={`w-full bg-white border-slate-200 h-12 ${!emailValid ? 'border-red-500' : ''}`}
                 required
               />
@@ -285,25 +364,37 @@ export const AdminProfile = () => {
             </div>
           </div>
 
+          {/* Additional Information */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Endereço Completo</label>
-            <Input
-              value={formData.address}
-              onChange={(e) => handleInputChange('address', e.target.value)}
-              className="w-full bg-white border-slate-200 h-12"
-              required
+            <label className="text-sm font-medium text-slate-700">Descrição Profissional</label>
+            <Textarea
+              value={formData.description || ''}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              placeholder="Conte um pouco sobre você e sua experiência profissional..."
+              className="w-full bg-white border-slate-200 min-h-[120px] resize-none"
+              rows={5}
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Horário de Atendimento</label>
-            <Input
-              value={formData.workingHours}
-              onChange={(e) => handleInputChange('workingHours', e.target.value)}
-              className="w-full bg-white border-slate-200 h-12"
-              placeholder="Ex: Segunda a Sexta: 8h às 18h"
-              required
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Website/Página Profissional</label>
+              <Input
+                value={formData.website || ''}
+                onChange={(e) => handleInputChange('website', e.target.value)}
+                placeholder="https://www.seusite.com.br"
+                className="w-full bg-white border-slate-200 h-12"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Instagram</label>
+              <Input
+                value={formData.instagram || ''}
+                onChange={(e) => handleInputChange('instagram', e.target.value)}
+                placeholder="@seuperfil"
+                className="w-full bg-white border-slate-200 h-12"
+              />
+            </div>
           </div>
 
         </div>
@@ -313,6 +404,7 @@ export const AdminProfile = () => {
             variant="outline"
             onClick={handleCancel}
             className="bg-white border border-red-200 text-red-600 hover:bg-red-50"
+            disabled={isSaving}
           >
             Cancelar
           </Button>
@@ -320,9 +412,16 @@ export const AdminProfile = () => {
             onClick={handleSave}
             className="text-white bg-white border border-slate-200"
             style={{ backgroundColor: 'var(--primary)', color: 'white' }}
-            disabled={!allFilled}
+            disabled={!allFilled || !hasChanges || isSaving}
           >
-            <span>Atualizar</span>
+            {isSaving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <span>Atualizando...</span>
+              </>
+            ) : (
+              <span>Atualizar</span>
+            )}
           </Button>
         </div>
       </div>

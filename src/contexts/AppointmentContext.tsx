@@ -1,9 +1,10 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { apiService } from '@/services/api';
 import { timeValidation } from '@/utils/timeValidation';
 import { appointmentService, Appointment } from '@/services/appointmentService';
 import { userService, User } from '@/services/userService';
+import { addressService, Address } from '@/services/addressService';
+import { DEFAULT_PRIMARY_COLOR } from '@/lib/constants';
 
 
 export type AppointmentStatus = 'criado' | 'confirmado' | 'realizado' | 'cancelado';
@@ -25,20 +26,25 @@ export interface Schedule {
 }
 
 export interface ProfessionalProfile {
+  id?: string;
   name: string;
   specialty: string;
   register: string;
-  address: string;
   phone: string;
   email: string;
   workingHours: string;
   profileImage?: string;
   primaryColor: string;
+  description?: string;
+  website?: string;
+  instagram?: string;
 }
 
 export interface AppointmentContextType {
   schedules: Schedule[];
   apiAppointments: Appointment[];
+  addresses: Address[];
+  selectedAddressId: string | null;
   profile: ProfessionalProfile;
   loading: boolean;
   apiLoading: boolean;
@@ -53,7 +59,7 @@ export interface AppointmentContextType {
   cancelAppointment: (scheduleId: string, slotId: string) => Promise<void>;
   fetchAppointmentsByMonth: (month: string) => Promise<void>;
   getAppointmentsForDate: (date: Date) => Appointment[];
-  updateProfile: (profile: ProfessionalProfile) => void;
+  updateProfile: (profile: ProfessionalProfile) => Promise<void>;
   updatePrimaryColor: (color: string) => void;
   canEditSchedule: (date: Date) => boolean;
   canCancelAppointment: (date: Date, time: string) => boolean;
@@ -61,6 +67,8 @@ export interface AppointmentContextType {
   getProfileByRegister: (register: string) => ProfessionalProfile | null;
   getProfileByPhoneNumber: (phoneNumber: string) => ProfessionalProfile | null;
   fetchUserProfile: () => Promise<void>;
+  fetchAddresses: () => Promise<void>;
+  setSelectedAddressId: (id: string | null) => void;
 }
 
 const AppointmentContext = createContext<AppointmentContextType | undefined>(undefined);
@@ -112,17 +120,18 @@ const generateFakeSchedules = (): Schedule[] => {
 export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   const [schedules, setSchedules] = useState<Schedule[]>(generateFakeSchedules());
   const [apiAppointments, setApiAppointments] = useState<Appointment[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
   const [profile, setProfile] = useState<ProfessionalProfile>({
     name: '',
     specialty: '',
     register: '',
-    address: '',
     phone: '',
     email: '',
     workingHours: '',
-    primaryColor: '',
+    primaryColor: DEFAULT_PRIMARY_COLOR,
   });
 
   const canEditSchedule = (date: Date): boolean => {
@@ -148,14 +157,18 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
 
     setApiLoading(true);
     try {
-      const appointments = await appointmentService.getAppointmentsByMonth(month, token);
+      const appointments = await appointmentService.getAppointmentsByMonth(
+        month, 
+        token,
+        selectedAddressId || undefined
+      );
       setApiAppointments(appointments);
     } catch (err) {
       console.error('Error fetching appointments:', err);
     } finally {
       setApiLoading(false);
     }
-  }, []);
+  }, [selectedAddressId]);
 
   // Get appointments for a specific date
   const getAppointmentsForDate = useCallback((date: Date): Appointment[] => {
@@ -361,7 +374,44 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const updateProfile = (newProfile: ProfessionalProfile) => {
+  const updateProfile = async (newProfile: ProfessionalProfile): Promise<void> => {
+    const token = getToken();
+    if (!token) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    // Format phone to send to API (remove formatting)
+    const phoneDigits = newProfile.phone.replace(/\D/g, '');
+
+    // Prepare payload for API
+    const payload: {
+      fullName?: string;
+      phone?: string;
+      email?: string;
+      specialty?: string;
+      registration?: string;
+      workingHours?: string;
+      description?: string;
+      website?: string;
+      instagram?: string;
+      profileImage?: string;
+    } = {
+      fullName: newProfile.name,
+      phone: phoneDigits,
+      email: newProfile.email,
+      specialty: newProfile.specialty,
+      registration: newProfile.register,
+      workingHours: newProfile.workingHours,
+      description: newProfile.description,
+      website: newProfile.website,
+      instagram: newProfile.instagram,
+      profileImage: newProfile.profileImage,
+    };
+
+    // Call API to update user
+    await userService.updateUserById(newProfile.id!, payload, token);
+    
+    // Update local state
     setProfile(newProfile);
   };
 
@@ -393,15 +443,18 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
 
       // Map API user data to ProfessionalProfile format
       const mappedProfile: ProfessionalProfile = {
+        id: userData._id,
         name: userData.fullName,
         specialty: userData.specialty || '',
         register: userData.registration || '',
-        address: userData.address || '',
         phone: formatPhoneFromAPI(userData.phone),
         email: userData.email,
         workingHours: userData.workingHours || '',
-        profileImage: undefined, // API doesn't provide this yet
-        primaryColor: '#3B82F6', // Default color
+        profileImage: userData.profileImage,
+        primaryColor: DEFAULT_PRIMARY_COLOR,
+        description: userData.description || '',
+        website: userData.website || '',
+        instagram: userData.instagram || '',
       };
       
       setProfile(mappedProfile);
@@ -410,9 +463,35 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  // Fetch addresses from API
+  const fetchAddresses = useCallback(async () => {
+    const token = getToken();
+    if (!token) {
+      console.error('Token de autenticação não encontrado');
+      return;
+    }
+
+    try {
+      const addressList = await addressService.getAddresses(token);
+      setAddresses(addressList);
+      
+      // Set first active address as selected if none is selected
+      if (!selectedAddressId && addressList.length > 0) {
+        const firstActive = addressList.find(addr => addr.isActive);
+        if (firstActive) {
+          setSelectedAddressId(firstActive._id);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching addresses:', err);
+    }
+  }, [selectedAddressId]);
+
   const value: AppointmentContextType = {
     schedules,
     apiAppointments,
+    addresses,
+    selectedAddressId,
     profile,
     loading,
     apiLoading,
@@ -449,6 +528,8 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
       return null;
     },
     fetchUserProfile,
+    fetchAddresses,
+    setSelectedAddressId,
   };
 
   return (

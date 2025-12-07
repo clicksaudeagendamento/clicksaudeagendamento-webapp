@@ -6,9 +6,14 @@ import { useAppointments } from "@/contexts/AppointmentContext";
 import { AdminScheduleForm } from "./AdminScheduleForm";
 import { timeValidation } from "@/utils/timeValidation";
 import { scheduleService, Schedule } from "@/services/scheduleService";
+import { useAddressSelection } from "@/hooks/useAddressSelection";
+import { AddressSelectionRequired } from "./AddressSelectionRequired";
+import { DEFAULT_PRIMARY_COLOR } from "@/lib/constants";
+import { showSuccessToast, showErrorToast } from "@/lib/toast-helper";
 
 export const AdminSchedules = () => {
-  const { schedules, profile, loading, canEditSchedule } = useAppointments();
+  const { schedules, profile, loading, canEditSchedule, selectedAddressId } = useAppointments();
+  const { shouldShowContent, requiresSelection, hasNoAddresses, addresses } = useAddressSelection();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -40,7 +45,7 @@ export const AdminSchedules = () => {
     setError('');
 
     try {
-      const schedules = await scheduleService.getSchedulesByMonth(month, token);
+      const schedules = await scheduleService.getSchedulesByMonth(month, token, selectedAddressId || undefined);
       setApiSchedules(schedules);
     } catch (err) {
       console.error('Error fetching schedules:', err);
@@ -50,11 +55,14 @@ export const AdminSchedules = () => {
     }
   };
 
-  // Fetch schedules when month changes
+  // Fetch schedules when month changes or address selection changes
   useEffect(() => {
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-    fetchSchedulesByMonth(month);
-  }, [currentDate.getMonth(), currentDate.getFullYear()]);
+    // Only fetch if we should show content (address is selected or only one address exists)
+    if (shouldShowContent && !hasNoAddresses) {
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      fetchSchedulesByMonth(month);
+    }
+  }, [currentDate.getMonth(), currentDate.getFullYear(), selectedAddressId, shouldShowContent, hasNoAddresses]);
 
   const getCalendarDays = (date: Date) => {
     const year = date.getFullYear();
@@ -147,13 +155,25 @@ export const AdminSchedules = () => {
       );
 
       await Promise.all(deletePromises);
+      
+      // Show success toast
+      showSuccessToast(
+        'Agenda excluída com sucesso!',
+        `${schedulesToDelete.length} ${schedulesToDelete.length === 1 ? 'horário excluído' : 'horários excluídos'}`
+      );
+      
       setSelectedDate(null);
       
       // Refresh the schedules after deletion
       const monthStr = String(currentDate.getMonth() + 1).padStart(2, '0');
       await fetchSchedulesByMonth(monthStr);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao excluir agenda');
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir agenda';
+      setError(errorMessage);
+      showErrorToast(
+        'Erro ao excluir agenda',
+        errorMessage
+      );
     }
   };
 
@@ -169,11 +189,23 @@ export const AdminSchedules = () => {
       }
 
       await scheduleService.deleteTimeSlot(scheduleId, token);
+      
+      // Show success toast
+      showSuccessToast(
+        'Horário excluído com sucesso!',
+        'O horário foi removido da agenda'
+      );
+      
       // Refresh the schedules after deletion
       const month = String(currentDate.getMonth() + 1).padStart(2, '0');
       await fetchSchedulesByMonth(month);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao excluir horário');
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir horário';
+      setError(errorMessage);
+      showErrorToast(
+        'Erro ao excluir horário',
+        errorMessage
+      );
     }
   };
 
@@ -199,6 +231,11 @@ export const AdminSchedules = () => {
   const currentMonthDays = getCalendarDays(currentDate);
   const canEdit = selectedDate ? canEditSchedule(selectedDate) : false;
   const allSchedulesInPast = selectedDate ? areAllSchedulesInPast(selectedSchedules) : false;
+
+  // Show address selection required message if needed
+  if (requiresSelection || hasNoAddresses) {
+    return <AddressSelectionRequired addressCount={addresses.length} />;
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -226,7 +263,7 @@ export const AdminSchedules = () => {
             onClick={() => setShowCreateForm(!showCreateForm)}
             className="h-10 sm:h-12 px-4 sm:px-6 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm sm:text-base"
             style={{
-              backgroundColor: profile.primaryColor,
+              backgroundColor: profile.primaryColor || DEFAULT_PRIMARY_COLOR,
               color: 'white'
             }}
           >
@@ -564,7 +601,7 @@ export const AdminSchedules = () => {
               <Button
                 variant="outline"
                 onClick={() => setConfirmModal({ open: false, type: null })}
-                className="flex-1"
+                className="flex-1 bg-white border-slate-200"
               >
                 Cancelar
               </Button>
@@ -577,7 +614,7 @@ export const AdminSchedules = () => {
                   }
                   setConfirmModal({ open: false, type: null });
                 }}
-                className="flex-1 bg-red-600 text-white hover:bg-red-700"
+                className="flex-1 bg-red-600 text-white hover:bg-red-700 border-red-600"
                 disabled={loading}
               >
                 Excluir

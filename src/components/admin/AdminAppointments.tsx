@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Phone, User, Clock, Calendar as CalendarIcon, X, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Phone, User, Clock, Calendar as CalendarIcon, X, AlertTriangle, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { useAppointments } from "@/contexts/AppointmentContext";
@@ -8,6 +8,8 @@ import { timeValidation } from "@/utils/timeValidation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { appointmentService } from "@/services/appointmentService";
+import { useAddressSelection } from "@/hooks/useAddressSelection";
+import { AddressSelectionRequired } from "./AddressSelectionRequired";
 
 export const AdminAppointments = () => {
   const { 
@@ -19,22 +21,34 @@ export const AdminAppointments = () => {
     apiLoading,
     canCancelAppointment,
     fetchAppointmentsByMonth,
-    getAppointmentsForDate
+    getAppointmentsForDate,
+    addresses,
+    selectedAddressId,
+    setSelectedAddressId,
+    fetchAddresses
   } = useAppointments();
+  const { shouldShowContent, requiresSelection, hasNoAddresses } = useAddressSelection();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'today' | 'upcoming' | 'past'>('all');
   const [error, setError] = useState('');
 
-  // Fetch appointments when month changes
+  // Load addresses on mount
   useEffect(() => {
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-    const year = currentDate.getFullYear();
-    const monthKey = `${year}-${month}`;
-    
-    // Only fetch if we don't have data for this month or if it's a different month
-    fetchAppointmentsByMonth(month);
-  }, [currentDate.getMonth(), currentDate.getFullYear(), fetchAppointmentsByMonth]);
+    fetchAddresses();
+  }, [fetchAddresses]);
+
+  // Fetch appointments when month changes or address selection changes
+  useEffect(() => {
+    // Only fetch if we should show content (address is selected or only one address exists)
+    if (shouldShowContent && !hasNoAddresses) {
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const year = currentDate.getFullYear();
+      const monthKey = `${year}-${month}`;
+      
+      fetchAppointmentsByMonth(month);
+    }
+  }, [currentDate.getMonth(), currentDate.getFullYear(), fetchAppointmentsByMonth, shouldShowContent, hasNoAddresses]);
 
   const getCalendarDays = (date: Date) => {
     const year = date.getFullYear();
@@ -61,7 +75,16 @@ export const AdminAppointments = () => {
   };
 
   const getAllAppointments = () => {
-    return apiAppointments.map(appointment => {
+    // Filter by selected address if one is selected
+    let filteredAppointments = apiAppointments;
+    
+    if (selectedAddressId) {
+      filteredAppointments = apiAppointments.filter(
+        appointment => appointment.addressId === selectedAddressId
+      );
+    }
+    
+    return filteredAppointments.map(appointment => {
       const appointmentDate = new Date(appointment.scheduleDateTime);
       const time = format(appointmentDate, 'HH:mm');
       
@@ -72,7 +95,8 @@ export const AdminAppointments = () => {
         time: time,
         date: appointmentDate,
         scheduleId: appointment.scheduleId,
-        status: appointment.status
+        status: appointment.status,
+        addressId: appointment.addressId
       };
     }).sort((a, b) => {
       const dateA = new Date(`${a.date.toDateString()} ${a.time}`);
@@ -165,6 +189,11 @@ export const AdminAppointments = () => {
   const filteredAppointments = getFilteredAppointments();
   const currentMonthDays = getCalendarDays(currentDate);
   const today = new Date();
+
+  // Show address selection required message if needed
+  if (requiresSelection || hasNoAddresses) {
+    return <AddressSelectionRequired addressCount={addresses.length} />;
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -520,13 +549,13 @@ const CancelAppointmentModal = ({ onConfirm, patientName, appointmentDate, appoi
               <Button
                 variant="outline"
                 onClick={() => setIsOpen(false)}
-                className="flex-1"
+                className="flex-1 bg-white border-slate-200"
               >
                 Não, manter
               </Button>
               <Button
                 onClick={handleConfirm}
-                className="flex-1 bg-red-600 text-white hover:bg-red-700"
+                className="flex-1 bg-red-600 text-white hover:bg-red-700 border-red-600"
               >
                 Sim, cancelar
               </Button>

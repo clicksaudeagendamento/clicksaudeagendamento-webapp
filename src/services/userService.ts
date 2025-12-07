@@ -16,6 +16,10 @@ export interface UpdateUserPayload {
   registration?: string;
   address?: string;
   workingHours?: string;
+  description?: string;
+  website?: string;
+  instagram?: string;
+  profileImage?: string;
   accepted?: boolean;
 }
 
@@ -44,6 +48,10 @@ export interface User {
   registration?: string;
   address?: string;
   workingHours?: string;
+  description?: string;
+  website?: string;
+  instagram?: string;
+  profileImage?: string;
 }
 
 export const userService = {

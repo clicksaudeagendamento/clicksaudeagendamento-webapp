@@ -5,7 +5,7 @@ import type { AppointmentData } from "@/pages/Index";
 import { useAppointments } from "@/contexts/AppointmentContext";
 
 interface ConfirmationScreenProps {
-  appointmentData: AppointmentData;
+  appointmentData: AppointmentData & { address?: string };
 }
 
 export const ConfirmationScreen = ({ appointmentData }: ConfirmationScreenProps) => {
@@ -93,6 +93,18 @@ export const ConfirmationScreen = ({ appointmentData }: ConfirmationScreenProps)
                 )}
               </div>
             </div>
+
+            {appointmentData.address && (
+              <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-slate-50 rounded-lg sm:rounded-xl">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${profile.primaryColor}20` }}>
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: profile.primaryColor }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-slate-500">Local do atendimento</p>
+                  <p className="font-semibold text-sm sm:text-base text-slate-800">{appointmentData.address}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

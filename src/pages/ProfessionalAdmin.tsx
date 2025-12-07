@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { useEffect } from "react";
-import { Calendar, Clock, User, ArrowLeft, Settings, Lock } from "lucide-react";
+import { Calendar, Clock, User, ArrowLeft, Settings, Lock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { AdminSchedules } from "@/components/admin/AdminSchedules";
 import { AdminAppointments } from "@/components/admin/AdminAppointments";
 import { AdminProfile } from "@/components/admin/AdminProfile";
+import { AdminAddresses } from "@/components/admin/AdminAddresses";
 import { AdminLogin } from "@/components/admin/AdminLogin";
+import { useAppointments } from "@/contexts/AppointmentContext";
 
-type AdminTab = 'schedules' | 'appointments' | 'profile';
+type AdminTab = 'schedules' | 'appointments' | 'profile' | 'addresses';
 
 export const ProfessionalAdmin = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<AdminTab>('schedules');
+  const { addresses, selectedAddressId, setSelectedAddressId, fetchAddresses } = useAppointments();
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -24,8 +27,34 @@ export const ProfessionalAdmin = () => {
     const parsedUser = JSON.parse(user);
     if (parsedUser.role !== 'customer') {
       navigate('/login', { replace: true });
+    } else {
+      // Fetch addresses when component mounts
+      fetchAddresses();
     }
-  }, [navigate]);
+  }, [navigate, fetchAddresses]);
+
+  // Auto-select first active address when addresses are loaded or when selected address becomes inactive
+  useEffect(() => {
+    if (addresses.length === 0) return;
+
+    const activeAddresses = addresses.filter(addr => addr.isActive);
+    
+    // If no address is selected, select the first active one
+    if (!selectedAddressId && activeAddresses.length > 0) {
+      setSelectedAddressId(activeAddresses[0]._id);
+      return;
+    }
+
+    // If selected address is not active anymore, select the first active one
+    if (selectedAddressId) {
+      const isSelectedActive = activeAddresses.some(addr => addr._id === selectedAddressId);
+      if (!isSelectedActive && activeAddresses.length > 0) {
+        setSelectedAddressId(activeAddresses[0]._id);
+      } else if (!isSelectedActive && activeAddresses.length === 0) {
+        setSelectedAddressId(null);
+      }
+    }
+  }, [addresses, selectedAddressId, setSelectedAddressId]);
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -39,6 +68,8 @@ export const ProfessionalAdmin = () => {
         return <AdminSchedules />;
       case 'appointments':
         return <AdminAppointments />;
+      case 'addresses':
+        return <AdminAddresses />;
       case 'profile':
         return <AdminProfile />;
       default:
@@ -65,49 +96,103 @@ export const ProfessionalAdmin = () => {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 mb-2">
             Painel do Profissional
           </h1>
-          <p className="text-slate-600 text-sm sm:text-base">
+          <p className="text-slate-600 text-sm sm:text-base mb-4">
             Gerencie suas agendas, agendamentos e perfil profissional
           </p>
         </div>
 
         {/* Navigation Tabs */}
         <div className="bg-white rounded-xl shadow-lg mb-4 sm:mb-6 border border-slate-200">
-          <div className="grid grid-cols-3">
+          <div className="grid grid-cols-4">
             <button
               onClick={() => setActiveTab('schedules')}
-              className={`py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-medium rounded-l-xl transition-colors ${
+              className={`py-3 sm:py-4 px-4 sm:px-6 font-medium rounded-l-xl transition-colors ${
                 activeTab === 'schedules'
                   ? 'bg-primary text-white'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1" />
-              <span className="block text-xs sm:text-sm">Agendas</span>
+              <Calendar className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+                activeTab === 'schedules' ? 'text-white' : ''
+              }`} />
+              <span className={`block text-xs sm:text-sm ${
+                activeTab === 'schedules' ? 'text-white' : ''
+              }`}>Agendas</span>
             </button>
             <button
               onClick={() => setActiveTab('appointments')}
-              className={`py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-medium transition-colors ${
+              className={`py-3 sm:py-4 px-4 sm:px-6 font-medium transition-colors ${
                 activeTab === 'appointments'
                   ? 'bg-primary text-white'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Clock className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1" />
-              <span className="block text-xs sm:text-sm">Agendamentos</span>
+              <Clock className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+                activeTab === 'appointments' ? 'text-white' : ''
+              }`} />
+              <span className={`block text-xs sm:text-sm ${
+                activeTab === 'appointments' ? 'text-white' : ''
+              }`}>Agendamentos</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('addresses')}
+              className={`py-3 sm:py-4 px-4 sm:px-6 font-medium transition-colors ${
+                activeTab === 'addresses'
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <MapPin className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+                activeTab === 'addresses' ? 'text-white' : ''
+              }`} />
+              <span className={`block text-xs sm:text-sm ${
+                activeTab === 'addresses' ? 'text-white' : ''
+              }`}>Endereços</span>
             </button>
             <button
               onClick={() => setActiveTab('profile')}
-              className={`py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-medium rounded-r-xl transition-colors ${
+              className={`py-3 sm:py-4 px-4 sm:px-6 font-medium rounded-r-xl transition-colors ${
                 activeTab === 'profile'
                   ? 'bg-primary text-white'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Settings className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1" />
-              <span className="block text-xs sm:text-sm">Perfil</span>
+              <Settings className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+                activeTab === 'profile' ? 'text-white' : ''
+              }`} />
+              <span className={`block text-xs sm:text-sm ${
+                activeTab === 'profile' ? 'text-white' : ''
+              }`}>Perfil</span>
             </button>
           </div>
         </div>
+
+        {/* Address Selector - Only show if multiple addresses and not on addresses/profile tabs */}
+        {addresses.length > 1 && activeTab !== 'addresses' && activeTab !== 'profile' && (
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <MapPin className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-slate-800">Selecione o local de atendimento</h3>
+            </div>
+            <select
+              value={selectedAddressId || ''}
+              onChange={(e) => setSelectedAddressId(e.target.value || null)}
+              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-800"
+            >
+              <option value="">Selecione um endereço...</option>
+              {addresses.filter(addr => addr.isActive).map((addr) => (
+                <option key={addr._id} value={addr._id}>
+                  {addr.address}
+                </option>
+              ))}
+            </select>
+            {!selectedAddressId && (
+              <p className="mt-2 text-sm text-amber-600">
+                Por favor, selecione um endereço para visualizar {activeTab === 'schedules' ? 'as agendas' : 'os agendamentos'}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Content */}
         {renderContent()}

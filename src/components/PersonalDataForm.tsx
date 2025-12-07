@@ -150,7 +150,7 @@ export const PersonalDataForm = ({ onSubmit, onBack, selectedDate, selectedTime,
             variant="outline"
             size="sm"
             onClick={onBack}
-            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 bg-white border-slate-200"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 border-slate-200 text-slate-700 hover:bg-slate-50"
           >
             <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
             Voltar
@@ -248,15 +248,19 @@ export const PersonalDataForm = ({ onSubmit, onBack, selectedDate, selectedTime,
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-primary text-white hover:bg-primary active:bg-primary py-3 sm:py-4 text-sm sm:text-lg font-semibold rounded-xl transition-all duration-200 h-12 sm:h-14 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            style={{ 
+              backgroundColor: profile.primaryColor,
+              color: 'white'
+            }}
           >
             {isSubmitting ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                <span>Criando agendamento...</span>
+                <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:h-5 border-b-2 border-white mr-2"></div>
+                Criando agendamento...
               </>
             ) : (
-              <span>Criar Agendamento</span>
+              <>Criar Agendamento</>
             )}
           </Button>
         </form>
