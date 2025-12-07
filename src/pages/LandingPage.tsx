@@ -44,13 +44,19 @@ export const LandingPage = () => {
   }
 
   const validatePhone = (phone: string) => {
-    return /^\d{11}$/.test(phone)
+    // Aceita 10 dígitos (sem 9º dígito) ou 11 dígitos (com 9º dígito)
+    return /^\d{10,11}$/.test(phone)
   }
 
   const formatPhone = (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 11)
     if (digits.length <= 2) return digits
-    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+    
+    // Formato para 10 dígitos: (85) 9285-0222
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+    if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+    
+    // Formato para 11 dígitos: (85) 99285-0222
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
   }
 
@@ -70,7 +76,7 @@ export const LandingPage = () => {
   const isFormFilled =
     formData.name.trim() !== "" &&
     formData.email.trim() !== "" &&
-    formData.phone.replace(/\D/g, "").length === 11 &&
+    formData.phone.replace(/\D/g, "").length >= 10 &&
     formData.password.trim() !== "" &&
     formData.confirmPassword.trim() !== "" &&
     validateEmail(formData.email) &&
@@ -93,7 +99,7 @@ export const LandingPage = () => {
       setPhoneValid(false)
       toast({
         title: "Erro",
-        description: "Telefone deve conter 11 dígitos numéricos.",
+        description: "Telefone deve conter 10 ou 11 dígitos numéricos.",
         variant: "destructive",
       })
       return
@@ -361,7 +367,7 @@ export const LandingPage = () => {
                   />
                   {!phoneValid && (
                     <span className="text-red-500 text-sm block mt-1.5 flex items-center gap-1">
-                      ⚠️ Telefone deve conter 11 dígitos
+                      ⚠️ Telefone deve conter 10 ou 11 dígitos
                     </span>
                   )}
                 </div>
@@ -434,7 +440,7 @@ export const LandingPage = () => {
                   }}
                   disabled={!isFormFilled}
                 >
-                  Começar Gratuitamente Agora
+                  Continuar
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
 
