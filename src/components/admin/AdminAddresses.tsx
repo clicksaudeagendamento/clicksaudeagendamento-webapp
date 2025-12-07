@@ -22,7 +22,13 @@ export const AdminAddresses = () => {
   const getUserPlan = (): PlanType => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      return user.plan || 'demo';
+      // Handle both string plan and object plan formats
+      if (typeof user.plan === 'string') {
+        return user.plan as PlanType;
+      } else if (user.plan && typeof user.plan === 'object' && user.plan.name) {
+        return user.plan.name as PlanType;
+      }
+      return 'demo';
     } catch {
       return 'demo';
     }
@@ -32,6 +38,28 @@ export const AdminAddresses = () => {
   const canAddAddress = (): { allowed: boolean; message?: string } => {
     const userPlan = getUserPlan();
     const planConfig = PLANS[userPlan];
+    
+    // Safety check - if plan is not found, default to demo
+    if (!planConfig) {
+      console.warn(`Plan "${userPlan}" not found, defaulting to demo`);
+      const demoPlan = PLANS['demo'];
+      // Always allow at least 1 address
+      if (addresses.length === 0) {
+        return { allowed: true };
+      }
+      if (addresses.length >= demoPlan.maxAddresses) {
+        return {
+          allowed: false,
+          message: `Você atingiu o limite de ${demoPlan.maxAddresses} ${demoPlan.maxAddresses === 1 ? 'endereço' : 'endereços'} do plano DEMO`
+        };
+      }
+      return { allowed: true };
+    }
+    
+    // Always allow first address regardless of plan
+    if (addresses.length === 0) {
+      return { allowed: true };
+    }
     
     if (planConfig.maxAddresses === 'unlimited') {
       return { allowed: true };
