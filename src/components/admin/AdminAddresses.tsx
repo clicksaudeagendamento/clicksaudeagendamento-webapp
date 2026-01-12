@@ -15,6 +15,8 @@ export const AdminAddresses = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newAddress, setNewAddress] = useState('');
   const [editAddress, setEditAddress] = useState('');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState<Address | null>(null);
 
   const getToken = () => localStorage.getItem('access_token') || '';
 
@@ -160,10 +162,13 @@ export const AdminAddresses = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este endereço?')) {
-      return;
-    }
+  const handleDelete = async (address: Address) => {
+    setAddressToDelete(address);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!addressToDelete) return;
 
     const token = getToken();
     if (!token) {
@@ -174,14 +179,21 @@ export const AdminAddresses = () => {
     setLoading(true);
     setError(null);
     try {
-      await addressService.deleteAddress(id, token);
+      await addressService.deleteAddress(addressToDelete._id, token);
       await loadAddresses();
+      setDeleteModalOpen(false);
+      setAddressToDelete(null);
     } catch (err) {
       console.error('Error deleting address:', err);
       setError(err instanceof Error ? err.message : 'Erro ao excluir endereço');
     } finally {
       setLoading(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
+    setAddressToDelete(null);
   };
 
   const handleToggleActive = async (id: string, currentStatus: boolean) => {
@@ -331,11 +343,7 @@ export const AdminAddresses = () => {
             {addresses.map((address) => (
               <div
                 key={address._id}
-                className={`p-4 rounded-lg border transition-all ${
-                  address.isActive
-                    ? 'bg-white border-slate-200'
-                    : 'bg-slate-50 border-slate-200 opacity-60'
-                }`}
+                className="p-4 rounded-lg border transition-all bg-white border-slate-200"
               >
                 {editingId === address._id ? (
                   // Edit Mode
@@ -373,8 +381,10 @@ export const AdminAddresses = () => {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-start gap-3">
-                        <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <div>
+                        <MapPin className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                          address.isActive ? 'text-primary' : 'text-slate-400'
+                        }`} />
+                        <div className={address.isActive ? '' : 'opacity-50'}>
                           <p className="text-slate-800 font-medium">{address.address}</p>
                           <p className="text-slate-500 text-sm mt-1">
                             {address.isActive ? 'Ativo' : 'Inativo'}
@@ -408,7 +418,7 @@ export const AdminAddresses = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(address._id)}
+                        onClick={() => handleDelete(address)}
                         disabled={loading}
                         className="border-red-200 text-red-600 hover:bg-red-50"
                       >
@@ -422,6 +432,66 @@ export const AdminAddresses = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                    Excluir Endereço
+                  </h3>
+                  <p className="text-slate-600 mb-4">
+                    Tem certeza que deseja excluir este endereço?
+                  </p>
+                  {addressToDelete && (
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 mb-4">
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-slate-700 font-medium">
+                          {addressToDelete.address}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-sm text-red-600">
+                    Esta ação não pode ser desfeita.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 p-6 pt-0">
+              <Button
+                variant="outline"
+                onClick={cancelDelete}
+                disabled={loading}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmDelete}
+                disabled={loading}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Excluindo...
+                  </>
+                ) : (
+                  'Excluir'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
