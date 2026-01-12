@@ -12,12 +12,17 @@ import { PLANS, PlanType } from "@/lib/constants";
 interface AdminScheduleFormProps {
   onClose: () => void;
   onScheduleCreated?: () => void;
+  initialDate?: Date;
 }
 
-export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleFormProps) => {
+export const AdminScheduleForm = ({ onClose, onScheduleCreated, initialDate }: AdminScheduleFormProps) => {
   const { profile, loading, addresses, selectedAddressId, setSelectedAddressId, fetchAddresses } = useAppointments();
   const [dateMode, setDateMode] = useState<'single' | 'range'>('single');
-  const [singleDate, setSingleDate] = useState('');
+  const [singleDate, setSingleDate] = useState(
+    initialDate
+      ? initialDate.toISOString().split('T')[0]
+      : ''
+  );
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [slotDuration, setSlotDuration] = useState('30');
@@ -69,7 +74,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
   const validateScheduleLimit = async (schedulesToCreate: number): Promise<{ allowed: boolean; message?: string }> => {
     const userPlan = getUserPlan();
     const planConfig = PLANS[userPlan];
-    
+
     try {
       const token = getToken();
       if (!token) return { allowed: false, message: 'Token não encontrado' };
@@ -77,7 +82,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
       // For demo plan: check total schedules
       if (!planConfig.isPeriodic && planConfig.maxSchedulesTotal !== undefined) {
         const totalSchedules = await scheduleService.getTotalScheduleCount(token);
-        
+
         if (totalSchedules + schedulesToCreate > planConfig.maxSchedulesTotal) {
           return {
             allowed: false,
@@ -89,7 +94,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
       // For other plans: check monthly schedules
       if (planConfig.isPeriodic && planConfig.maxSchedulesPerMonth !== undefined) {
         const monthlySchedules = await scheduleService.getMonthlyScheduleCount(token);
-        
+
         if (monthlySchedules + schedulesToCreate > planConfig.maxSchedulesPerMonth) {
           return {
             allowed: false,
@@ -109,11 +114,11 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
     const slots = [];
     const startTime = new Date(`2000-01-01T${preset.start}:00`);
     const endTime = new Date(`2000-01-01T${preset.end}:00`);
-    
+
     const currentTime = new Date(startTime);
     while (currentTime < endTime) {
       const timeStr = currentTime.toTimeString().slice(0, 5);
-      
+
       // Skip lunch break if enabled in state
       if (lunchBreak) {
         const lunchStartTime = new Date(`2000-01-01T${lunchStart}:00`);
@@ -123,11 +128,11 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
           continue;
         }
       }
-      
+
       slots.push(timeStr);
       currentTime.setMinutes(currentTime.getMinutes() + duration);
     }
-    
+
     return slots;
   };
 
@@ -147,7 +152,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
       setError('Por favor, selecione um endereço de atendimento');
       return;
     }
-    
+
     // Validate dates
     const dateToValidate = dateMode === 'single' ? singleDate : startDate;
     const [year, month, day] = dateToValidate.split('-').map(Number);
@@ -155,7 +160,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     if (selectedDate < today) {
       setError('Não é possível criar agenda para datas passadas');
       return;
@@ -165,7 +170,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
     if (dateMode === 'range' && endDate) {
       const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
       const endDateObj = new Date(endYear, endMonth - 1, endDay, 0, 0, 0, 0);
-      
+
       if (endDateObj < selectedDate) {
         setError('A data final deve ser posterior à data inicial');
         return;
@@ -200,10 +205,10 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
 
     setError('');
     setIsSubmitting(true);
-    
+
     try {
       const timeSlots = generateTimeSlots(selectedPreset, parseInt(slotDuration));
-      
+
       // Calculate number of schedules to create
       let schedulesToCreate = timeSlots.length;
       if (dateMode === 'single' && enableRecurrence) {
@@ -230,7 +235,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
 
       if (dateMode === 'single') {
         const isoDate = selectedDate.toISOString();
-        
+
         if (enableRecurrence) {
           // Use new API with recurrence
           payload.startDate = isoDate;
@@ -247,16 +252,16 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
         // Range mode
         const startIsoDate = selectedDate.toISOString();
         payload.startDate = startIsoDate;
-        
+
         if (endDate) {
           const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
           const endDateObj = new Date(endYear, endMonth - 1, endDay, 0, 0, 0, 0);
           payload.endDate = endDateObj.toISOString();
         }
       }
-      
+
       await scheduleService.createSchedule(payload, token);
-      
+
       // Show success toast
       if (dateMode === 'single' && enableRecurrence) {
         showSuccessToast(
@@ -274,7 +279,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
           'Horários disponíveis para agendamento'
         );
       }
-      
+
       onClose();
       if (onScheduleCreated) {
         onScheduleCreated();
@@ -400,18 +405,17 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
                 setDateMode('single');
                 setEnableRecurrence(false);
               }}
-              className={`p-3 text-left border rounded-lg transition-colors ${
-                dateMode === 'single'
+              className={`p-3 text-left border rounded-lg transition-colors ${dateMode === 'single'
                   ? 'border-primary ring-2 ring-primary/30 bg-primary/10'
                   : 'border-slate-200 hover:bg-slate-50'
-              }`}
+                }`}
               style={
                 dateMode === 'single'
                   ? {
-                      borderColor: profile.primaryColor,
-                      backgroundColor: profile.primaryColor + '10',
-                      boxShadow: `0 0 0 2px ${profile.primaryColor}33`,
-                    }
+                    borderColor: profile.primaryColor,
+                    backgroundColor: profile.primaryColor + '10',
+                    boxShadow: `0 0 0 2px ${profile.primaryColor}33`,
+                  }
                   : {}
               }
             >
@@ -424,18 +428,17 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
                 setDateMode('range');
                 setEnableRecurrence(false);
               }}
-              className={`p-3 text-left border rounded-lg transition-colors ${
-                dateMode === 'range'
+              className={`p-3 text-left border rounded-lg transition-colors ${dateMode === 'range'
                   ? 'border-primary ring-2 ring-primary/30 bg-primary/10'
                   : 'border-slate-200 hover:bg-slate-50'
-              }`}
+                }`}
               style={
                 dateMode === 'range'
                   ? {
-                      borderColor: profile.primaryColor,
-                      backgroundColor: profile.primaryColor + '10',
-                      boxShadow: `0 0 0 2px ${profile.primaryColor}33`,
-                    }
+                    borderColor: profile.primaryColor,
+                    backgroundColor: profile.primaryColor + '10',
+                    boxShadow: `0 0 0 2px ${profile.primaryColor}33`,
+                  }
                   : {}
               }
             >
@@ -497,14 +500,14 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
                         const baseDate = new Date(year, month - 1, day);
                         const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
                         const dayName = dayNames[baseDate.getDay()];
-                        
+
                         if (recurrenceOccurrences === 1) {
                           return `Esta agenda será criada apenas para ${dayName}, ${baseDate.toLocaleDateString('pt-BR')}`;
                         }
-                        
+
                         const lastDate = new Date(baseDate);
                         lastDate.setDate(lastDate.getDate() + (recurrenceOccurrences - 1) * 7);
-                        
+
                         return `Esta agenda será criada para ${recurrenceOccurrences} ${dayName}s seguidas, de ${baseDate.toLocaleDateString('pt-BR')} até ${lastDate.toLocaleDateString('pt-BR')}`;
                       })()}
                     </p>
@@ -576,7 +579,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
               Intervalo para Almoço
             </label>
           </div>
-          
+
           {lunchBreak && (
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -644,7 +647,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated }: AdminScheduleF
               addresses.length === 0
             }
             className="flex-1 h-12 font-semibold text-sm sm:text-base"
-            style={{ 
+            style={{
               backgroundColor: profile.primaryColor,
               color: 'white'
             }}

@@ -17,6 +17,7 @@ export const AdminSchedules = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createFormDate, setCreateFormDate] = useState<Date | undefined>(undefined);
   const [filterType, setFilterType] = useState<'all' | 'available' | 'busy'>('all');
   const [error, setError] = useState('');
   const [apiSchedules, setApiSchedules] = useState<Schedule[]>([]);
@@ -142,7 +143,7 @@ export const AdminSchedules = () => {
 
       // Get all schedules for the selected date
       const schedulesToDelete = getSchedulesForDate(date);
-      
+
       if (schedulesToDelete.length === 0) {
         setError('Nenhum horário encontrado para excluir');
         return;
@@ -150,20 +151,20 @@ export const AdminSchedules = () => {
 
       // Delete all individual time slots for this date
       // This will also delete any associated appointments
-      const deletePromises = schedulesToDelete.map(schedule => 
+      const deletePromises = schedulesToDelete.map(schedule =>
         scheduleService.deleteTimeSlot(schedule._id, token)
       );
 
       await Promise.all(deletePromises);
-      
+
       // Show success toast
       showSuccessToast(
         'Agenda excluída com sucesso!',
         `${schedulesToDelete.length} ${schedulesToDelete.length === 1 ? 'horário excluído' : 'horários excluídos'}`
       );
-      
+
       setSelectedDate(null);
-      
+
       // Refresh the schedules after deletion
       const monthStr = String(currentDate.getMonth() + 1).padStart(2, '0');
       await fetchSchedulesByMonth(monthStr);
@@ -189,13 +190,13 @@ export const AdminSchedules = () => {
       }
 
       await scheduleService.deleteTimeSlot(scheduleId, token);
-      
+
       // Show success toast
       showSuccessToast(
         'Horário excluído com sucesso!',
         'O horário foi removido da agenda'
       );
-      
+
       // Refresh the schedules after deletion
       const month = String(currentDate.getMonth() + 1).padStart(2, '0');
       await fetchSchedulesByMonth(month);
@@ -220,7 +221,7 @@ export const AdminSchedules = () => {
   // Check if all schedule times are in the past
   const areAllSchedulesInPast = (schedules: Schedule[]) => {
     if (schedules.length === 0) return false;
-    
+
     const now = new Date();
     return schedules.every(schedule => {
       const scheduleDateTime = new Date(schedule.dateTime);
@@ -260,7 +261,10 @@ export const AdminSchedules = () => {
             <p className="text-sm sm:text-base text-slate-600">Configure seus dias e horários disponíveis</p>
           </div>
           <Button
-            onClick={() => setShowCreateForm(!showCreateForm)}
+            onClick={() => {
+              setCreateFormDate(undefined);
+              setShowCreateForm(!showCreateForm);
+            }}
             className="h-10 sm:h-12 px-4 sm:px-6 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm sm:text-base"
             style={{
               backgroundColor: profile.primaryColor || DEFAULT_PRIMARY_COLOR,
@@ -340,11 +344,16 @@ export const AdminSchedules = () => {
         {showCreateForm && (
           <div className="mt-6">
             <AdminScheduleForm
-              onClose={() => setShowCreateForm(false)}
+              initialDate={createFormDate}
+              onClose={() => {
+                setShowCreateForm(false);
+                setCreateFormDate(undefined);
+              }}
               onScheduleCreated={() => {
                 // Refresh schedules after creation
                 const month = String(currentDate.getMonth() + 1).padStart(2, '0');
                 fetchSchedulesByMonth(month);
+                setCreateFormDate(undefined); // Reset created date
               }}
             />
           </div>
@@ -397,21 +406,30 @@ export const AdminSchedules = () => {
             return (
               <div key={index} className="relative">
                 <button
-                  onClick={() => hasScheduleForDay && isCurrentMonthDay ? setSelectedDate(day) : null}
-                  disabled={!hasScheduleForDay || !isCurrentMonthDay}
+                  onClick={() => {
+                    if (!isCurrentMonthDay) return;
+                    if (hasScheduleForDay) {
+                      setSelectedDate(day);
+                    } else {
+                      // Click on empty day: Open create form
+                      setCreateFormDate(day);
+                      setShowCreateForm(true);
+                    }
+                  }}
+                  disabled={!isCurrentMonthDay}
                   className={`w-full h-12 sm:h-16 md:h-20 rounded-xl flex flex-col items-center justify-center text-xs sm:text-sm font-medium transition-all duration-200 relative ${isCurrentMonthDay
-                      ? hasScheduleForDay
-                        ? isSelected
-                          ? 'shadow-lg transform scale-105'
-                          : stats.available > 0 && stats.busy === 0
-                            ? 'bg-green-50 border-2 border-green-200 hover:bg-green-100 cursor-pointer'
-                            : stats.available === 0 && stats.busy > 0
-                              ? 'bg-red-50 border-2 border-red-200 hover:bg-red-100 cursor-pointer'
-                              : stats.available > 0 && stats.busy > 0
-                                ? 'bg-orange-50 border-2 border-orange-200 hover:bg-orange-100 cursor-pointer'
-                                : 'bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200'
-                        : 'text-slate-400'
-                      : 'text-slate-300'
+                    ? hasScheduleForDay
+                      ? isSelected
+                        ? 'shadow-lg transform scale-105'
+                        : stats.available > 0 && stats.busy === 0
+                          ? 'bg-green-50 border-2 border-green-200 hover:bg-green-100 cursor-pointer'
+                          : stats.available === 0 && stats.busy > 0
+                            ? 'bg-red-50 border-2 border-red-200 hover:bg-red-100 cursor-pointer'
+                            : stats.available > 0 && stats.busy > 0
+                              ? 'bg-orange-50 border-2 border-orange-200 hover:bg-orange-100 cursor-pointer'
+                              : 'bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200'
+                      : 'text-slate-400'
+                    : 'text-slate-300'
                     }`}
                   style={isSelected ? {
                     backgroundColor: `${profile.primaryColor}20`,
@@ -555,8 +573,8 @@ export const AdminSchedules = () => {
                 <div
                   key={schedule._id}
                   className={`p-3 sm:p-4 rounded-xl border transition-all relative ${isAvailable
-                      ? 'bg-green-50 border-green-200'
-                      : 'bg-red-50 border-red-200'
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-red-50 border-red-200'
                     }`}
                 >
                   {canDeleteSlot && (
@@ -572,8 +590,8 @@ export const AdminSchedules = () => {
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-semibold text-slate-800 text-sm sm:text-base">{time}</span>
                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${isAvailable
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
                       }`}>
                       {isAvailable ? 'Livre' : 'Ocupado'}
                     </span>
