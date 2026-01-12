@@ -51,9 +51,9 @@ export const AdminProfile = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  // Phone validation (11 digits)
+  // Phone validation (minimum 10 digits)
   const validatePhone = (phone: string) => {
-    return /^\d{11}$/.test(phone);
+    return /^\d{10,11}$/.test(phone);
   };
 
   // Phone mask (XX) XXXXX-XXXX
@@ -346,7 +346,7 @@ export const AdminProfile = () => {
                 required
               />
               {!phoneValid && (
-                <span className="text-red-500 text-xs">Telefone deve conter 11 dígitos numéricos</span>
+                <span className="text-red-500 text-xs">Telefone deve conter no mínimo 10 dígitos numéricos</span>
               )}
             </div>
             <div className="space-y-2">
