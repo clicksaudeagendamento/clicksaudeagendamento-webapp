@@ -7,56 +7,59 @@
 @layer base {
   :root {
     /* Background & Foreground */
-    --background: 255 255 255;
-    --foreground: 15 23 42;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    /* Slate 900 */
 
     /* Card */
-    --card: 255 255 255;
-    --card-foreground: 15 23 42;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
     /* Popover */
-    --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Primary - Blue */
-    --primary: 59 130 246;
-    --primary-foreground: 255 255 255;
+    /* Primary - Professional Health Blue */
+    --primary: 210 100% 50%;
+    /* Deep Sky Blue - distinct but professional */
+    --primary-foreground: 210 40% 98%;
 
-    /* Secondary - Slate */
-    --secondary: 248 250 252;
-    --secondary-foreground: 71 85 105;
+    /* Secondary - Subtle Slate */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11.2%;
 
     /* Muted */
-    --muted: 241 245 249;
-    --muted-foreground: 100 116 139;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 16% 47%;
 
     /* Accent */
-    --accent: 248 250 252;
-    --accent-foreground: 71 85 105;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11.2%;
 
     /* Destructive - Red */
-    --destructive: 239 68 68;
-    --destructive-foreground: 255 255 255;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
     /* Success - Green */
-    --success: 16 185 129;
-    --success-foreground: 255 255 255;
+    --success: 142 76% 36%;
+    /* Darker, more professional green */
+    --success-foreground: 355 100% 100%;
 
-    /* Warning - Orange */
-    --warning: 245 158 11;
-    --warning-foreground: 255 255 255;
+    /* Warning - Amber */
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
 
     /* Info - Blue */
-    --info: 59 130 246;
-    --info-foreground: 255 255 255;
+    --info: 210 100% 50%;
+    --info-foreground: 210 40% 98%;
 
     /* Border & Input */
-    --border: 226 232 240;
-    --input: 226 232 240;
-    --ring: 59 130 246;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 210 100% 50%;
 
-    /* Border Radius */
-    --radius: 0.5rem;
+    /* Border Radius - Smooth Modern Look */
+    --radius: 0.75rem;
   }
 }
 
@@ -74,12 +77,16 @@
   }
 
   /* Garantir que todos os inputs sejam brancos com estilos consistentes */
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     @apply bg-white border-slate-200 text-slate-700;
   }
 
   /* Foco consistente em inputs */
-  input:focus, textarea:focus, select:focus {
+  input:focus,
+  textarea:focus,
+  select:focus {
     @apply outline-none ring-1 ring-primary border-primary;
   }
 
@@ -89,7 +96,12 @@
   }
 
   /* Tipografia base */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply text-slate-800 font-bold leading-tight;
   }
 
@@ -109,7 +121,9 @@
     @apply text-base sm:text-lg font-semibold;
   }
 
-  p, span, div {
+  p,
+  span,
+  div {
     @apply text-slate-700;
   }
 
@@ -120,25 +134,26 @@
 }
 
 @layer components {
+
   /* Calendar Components */
   .calendar-day {
     @apply w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-xs sm:text-sm font-medium transition-all duration-200;
   }
-  
+
   .calendar-day-available {
-    @apply hover:bg-green-50 cursor-pointer relative text-green-700 border border-green-200;
+    @apply hover:bg-success/10 cursor-pointer relative text-success border border-success/30;
   }
-  
+
   .calendar-day-selected {
-    @apply bg-green-500 text-white border-green-600;
+    @apply bg-success text-success-foreground border-success;
   }
-  
+
   .calendar-day-unavailable {
-    @apply text-slate-400 cursor-not-allowed border border-slate-200;
+    @apply text-muted-foreground cursor-not-allowed border border-muted;
   }
-  
+
   .availability-dot {
-    @apply w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full absolute -bottom-0.5 sm:-bottom-1 left-1/2 transform -translate-x-1/2;
+    @apply w-1.5 h-1.5 sm:w-2 sm:h-2 bg-success rounded-full absolute -bottom-0.5 sm:-bottom-1 left-1/2 transform -translate-x-1/2;
   }
 
   /* Card Components */
@@ -157,36 +172,36 @@
 
   /* Status Badges */
   .badge-success {
-    @apply px-2 py-1 bg-green-100 text-green-700 rounded text-sm font-medium;
+    @apply px-2 py-1 bg-success/15 text-success rounded text-sm font-medium;
   }
 
   .badge-error {
-    @apply px-2 py-1 bg-red-100 text-red-700 rounded text-sm font-medium;
+    @apply px-2 py-1 bg-destructive/15 text-destructive rounded text-sm font-medium;
   }
 
   .badge-warning {
-    @apply px-2 py-1 bg-orange-100 text-orange-700 rounded text-sm font-medium;
+    @apply px-2 py-1 bg-warning/15 text-warning-foreground rounded text-sm font-medium;
   }
 
   .badge-info {
-    @apply px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium;
+    @apply px-2 py-1 bg-info/15 text-info rounded text-sm font-medium;
   }
 
   /* Alert Components */
   .alert-success {
-    @apply p-4 bg-green-50 border border-green-200 rounded-lg;
+    @apply p-4 bg-success/10 border border-success/20 rounded-lg text-success;
   }
 
   .alert-error {
-    @apply p-4 bg-red-50 border border-red-200 rounded-lg;
+    @apply p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive;
   }
 
   .alert-warning {
-    @apply p-4 bg-orange-50 border border-orange-200 rounded-lg;
+    @apply p-4 bg-warning/10 border border-warning/20 rounded-lg text-warning-foreground;
   }
 
   .alert-info {
-    @apply p-4 bg-blue-50 border border-blue-200 rounded-lg;
+    @apply p-4 bg-info/10 border border-info/20 rounded-lg text-info;
   }
 
   /* Mobile Optimizations */
@@ -194,20 +209,22 @@
     .container {
       @apply px-4;
     }
-    
+
     .mobile-button {
       @apply min-h-[48px] text-base;
     }
-    
+
     .text-responsive {
       @apply text-sm leading-relaxed;
     }
-    
-    .space-y-mobile > * + * {
+
+    .space-y-mobile>*+* {
       @apply mt-3;
     }
 
-    h1, h2, h3 {
+    h1,
+    h2,
+    h3 {
       @apply leading-tight;
     }
 
@@ -215,7 +232,9 @@
       @apply min-h-[44px] touch-manipulation;
     }
 
-    input, textarea, select {
+    input,
+    textarea,
+    select {
       @apply min-h-[44px] text-base;
     }
 
@@ -230,13 +249,14 @@
   }
 
   @keyframes fadeIn {
-    from { 
-      opacity: 0; 
-      transform: translateY(10px); 
+    from {
+      opacity: 0;
+      transform: translateY(10px);
     }
-    to { 
-      opacity: 1; 
-      transform: translateY(0); 
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 }
