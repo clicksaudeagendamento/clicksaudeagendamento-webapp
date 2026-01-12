@@ -1,11 +1,59 @@
 
-import { User, MapPin, Phone, Clock, Mail, Globe, Instagram } from "lucide-react";
+import { User, MapPin, Phone, Clock, Mail, Globe, Instagram, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppointments } from "@/contexts/AppointmentContext";
+import { addressService, Address } from "@/services/addressService";
+import { useState, useEffect } from "react";
 
 export const ProfessionalHeader = () => {
   const navigate = useNavigate();
   const { profile } = useAppointments();
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+
+  // Load addresses on component mount
+  useEffect(() => {
+    const loadAddresses = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        
+        const addressData = await addressService.getAddresses(token);
+        const activeAddresses = addressData.filter(addr => addr.isActive);
+        setAddresses(activeAddresses);
+        
+        // Set default selected address
+        if (activeAddresses.length === 1) {
+          setSelectedAddress(activeAddresses[0]);
+        } else if (activeAddresses.length > 1) {
+          // Set first active address as default, or implement user preference logic
+          setSelectedAddress(activeAddresses[0]);
+        }
+      } catch (error) {
+        console.error('Error loading addresses:', error);
+      }
+    };
+
+    loadAddresses();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.address-dropdown-container')) {
+        setShowAddressDropdown(false);
+      }
+    };
+
+    if (showAddressDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showAddressDropdown]);
 
   // Function to generate initials from name
   const generateInitials = (fullName: string): string => {
@@ -50,6 +98,19 @@ export const ProfessionalHeader = () => {
     }
   };
 
+  const handleAddressClick = () => {
+    if (selectedAddress) {
+      const encodedAddress = encodeURIComponent(selectedAddress.address);
+      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+      window.open(googleMapsUrl, '_blank');
+    }
+  };
+
+  const handleAddressSelect = (address: Address) => {
+    setSelectedAddress(address);
+    setShowAddressDropdown(false);
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-slate-200">
       <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
@@ -86,6 +147,52 @@ export const ProfessionalHeader = () => {
           )}
           
           <div className="space-y-2 text-xs sm:text-sm text-slate-600">
+            {selectedAddress && (
+              <div className="relative address-dropdown-container">
+                <div
+                  className="flex items-center justify-center sm:justify-start gap-2 cursor-pointer hover:opacity-80 transition-opacity group"
+                  onClick={addresses.length === 1 ? handleAddressClick : () => setShowAddressDropdown(!showAddressDropdown)}
+                  title={addresses.length === 1 ? "Abrir no Google Maps" : "Selecionar endereço"}
+                >
+                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0 group-hover:scale-110 transition-transform" style={{ color: profile.primaryColor }} />
+                  <span className="text-blue-600 hover:underline flex-1">{selectedAddress.address}</span>
+                  {addresses.length > 1 && (
+                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" style={{ color: profile.primaryColor }} />
+                  )}
+                </div>
+                
+                {/* Address Dropdown */}
+                {showAddressDropdown && addresses.length > 1 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50">
+                    {addresses.map((address) => (
+                      <div
+                        key={address._id}
+                        className="p-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                        onClick={() => handleAddressSelect(address)}
+                      >
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0 mt-0.5" style={{ color: profile.primaryColor }} />
+                          <span className="text-slate-700 text-xs sm:text-sm">{address.address}</span>
+                        </div>
+                        <div className="ml-5 mt-1">
+                          <button
+                            className="text-blue-600 hover:underline text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const encodedAddress = encodeURIComponent(address.address);
+                              const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+                              window.open(googleMapsUrl, '_blank');
+                            }}
+                          >
+                            Abrir no Google Maps
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             {profile.phone && profile.phone.trim() && (
               <div
                 className="flex items-center justify-center sm:justify-start gap-2 cursor-pointer hover:opacity-80 transition-opacity group"
@@ -164,7 +271,7 @@ export const ProfessionalHeader = () => {
            }}>
         <p className="text-center sm:text-left text-sm sm:text-base" 
            style={{ color: profile.primaryColor }}>
-          Agende sua consulta de forma rápida e prática. Selecione o dia e horário de sua preferência.
+          Agende sua consulta de forma rápida e prática.  ário de sua preferência.
         </p>
       </div>
     </div>
