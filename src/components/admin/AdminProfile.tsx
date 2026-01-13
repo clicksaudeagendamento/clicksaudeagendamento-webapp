@@ -1,14 +1,16 @@
 
 import { useState, useEffect } from "react";
-import { Save, User, Camera } from "lucide-react";
+import { Save, User, Camera, Crown, Calendar, MapPin, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppointments } from "@/contexts/AppointmentContext";
 import { useToast } from "@/hooks/use-toast";
+import { PLANS, type PlanType, type PlanConfig } from "@/lib/constants";
+import { scheduleService } from "@/services/scheduleService";
 
 export const AdminProfile = () => {
-  const { profile, updateProfile, updatePrimaryColor, fetchUserProfile } = useAppointments();
+  const { profile, updateProfile, updatePrimaryColor, fetchUserProfile, addresses } = useAppointments();
   const { toast } = useToast();
   const [formData, setFormData] = useState({ ...profile, email: profile.email || '' });
   const [emailValid, setEmailValid] = useState(true);
@@ -19,8 +21,120 @@ export const AdminProfile = () => {
   const [error, setError] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [userPlanInfo, setUserPlanInfo] = useState<{
+    fullName: string;
+    plan: PlanType;
+    planDetails: PlanConfig;
+    usage: {
+      totalSchedules: number;
+      monthlySchedules: number;
+      totalAddresses: number;
+    };
+  } | null>(null);
+  const [loadingUsage, setLoadingUsage] = useState(true);
 
   const isEditing = true;
+
+  // Helper function to get user plan information
+  const getUserPlanInfo = () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      let planType: PlanType = 'demo';
+      
+      // Handle both string plan and object plan formats
+      if (typeof user.plan === 'string') {
+        planType = user.plan as PlanType;
+      } else if (user.plan && typeof user.plan === 'object' && user.plan.name) {
+        planType = user.plan.name as PlanType;
+      }
+      
+      const planDetails = PLANS[planType];
+      
+      return {
+        fullName: user.fullName || 'Usuário',
+        plan: planType,
+        planDetails
+      };
+    } catch {
+      return {
+        fullName: 'Usuário',
+        plan: 'demo' as PlanType,
+        planDetails: PLANS.demo
+      };
+    }
+  };
+
+  // Function to fetch usage data
+  const fetchUsageData = async () => {
+    try {
+      setLoadingUsage(true);
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const [totalSchedules, monthlySchedules] = await Promise.all([
+        scheduleService.getTotalScheduleCount(token),
+        scheduleService.getMonthlyScheduleCount(token)
+      ]);
+
+      const userInfo = getUserPlanInfo();
+      setUserPlanInfo({
+        ...userInfo,
+        usage: {
+          totalSchedules,
+          monthlySchedules,
+          totalAddresses: addresses.length
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao buscar dados de uso:', error);
+      // Set basic info even if usage fetch fails
+      const userInfo = getUserPlanInfo();
+      setUserPlanInfo({
+        ...userInfo,
+        usage: {
+          totalSchedules: 0,
+          monthlySchedules: 0,
+          totalAddresses: addresses.length
+        }
+      });
+    } finally {
+      setLoadingUsage(false);
+    }
+  };
+
+  // Helper function to format plan name
+  const formatPlanName = (planType: PlanType) => {
+    const planNames = {
+      demo: 'DEMO',
+      basic: 'BÁSICO',
+      professional: 'PROFISSIONAL',
+      enterprise: 'EMPRESARIAL'
+    };
+    return planNames[planType] || planType.toUpperCase();
+  };
+
+  // Helper function to get plan badge color
+  const getPlanBadgeColor = (planType: PlanType) => {
+    const colors = {
+      demo: 'bg-gray-100 text-gray-700 border-gray-300',
+      basic: 'bg-blue-100 text-blue-700 border-blue-300',
+      professional: 'bg-purple-100 text-purple-700 border-purple-300',
+      enterprise: 'bg-amber-100 text-amber-700 border-amber-300'
+    };
+    return colors[planType] || 'bg-gray-100 text-gray-700 border-gray-300';
+  };
+
+  // Calculate usage percentages
+  const getUsagePercentage = (used: number, total: number | undefined) => {
+    if (!total || total === 0) return 0;
+    return Math.min((used / total) * 100, 100);
+  };
+
+  const getUsageColor = (percentage: number) => {
+    if (percentage >= 90) return 'text-red-600 bg-red-50';
+    if (percentage >= 70) return 'text-amber-600 bg-amber-50';
+    return 'text-green-600 bg-green-50';
+  };
 
   // Fetch user profile from API when component mounts
   useEffect(() => {
@@ -30,6 +144,8 @@ export const AdminProfile = () => {
       try {
         await fetchUserProfile();
         setProfileLoaded(true);
+        // Fetch usage data after profile is loaded
+        fetchUsageData();
       } catch (error) {
         console.error('Error loading user profile:', error);
         setError('Erro ao carregar perfil. Verifique sua conexão e tente novamente.');
@@ -40,6 +156,19 @@ export const AdminProfile = () => {
 
     loadUserProfile();
   }, [fetchUserProfile]);
+
+  // Update usage when addresses change
+  useEffect(() => {
+    if (userPlanInfo) {
+      setUserPlanInfo(prev => prev ? {
+        ...prev,
+        usage: {
+          ...prev.usage,
+          totalAddresses: addresses.length
+        }
+      } : null);
+    }
+  }, [addresses.length, userPlanInfo]);
 
   // Sync formData with profile if profile changes (e.g. after cancel)
   useEffect(() => {
@@ -219,6 +348,104 @@ export const AdminProfile = () => {
       {/* Profile Form */}
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-slate-200">
         <div className="space-y-6">
+          {/* Plan Information */}
+          {userPlanInfo && (
+            <div className="mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                {/* <div className="flex items-center gap-2">
+                  <User className="w-5 h-5 text-slate-600" />
+                  <span className="font-medium text-slate-800">{userPlanInfo.fullName}</span>
+                </div> */}
+                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium ${getPlanBadgeColor(userPlanInfo.plan)}`}>
+                  <Crown className="w-4 h-4" />
+                  <span>Plano {formatPlanName(userPlanInfo.plan)}</span>
+                  <span className="ml-2 text-xs">
+                    {userPlanInfo.planDetails.price === 0 ? 'Gratuito' : `R$ ${userPlanInfo.planDetails.price}/mês`}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Plan Usage Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* Schedules Usage */}
+                <div className="bg-slate-50 p-3 rounded-lg border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-medium text-slate-700">Agendas</span>
+                  </div>
+                  {loadingUsage ? (
+                    <div className="text-xs text-slate-500">Carregando...</div>
+                  ) : (
+                    <div>
+                      {userPlanInfo.planDetails.isPeriodic ? (
+                        <div>
+                          <div className="text-xs text-slate-600 mb-1">
+                            Usadas este mês: {userPlanInfo.usage.monthlySchedules} / {userPlanInfo.planDetails.maxSchedulesPerMonth || '∞'}
+                          </div>
+                          {userPlanInfo.planDetails.maxSchedulesPerMonth && (
+                            <div className="w-full bg-slate-200 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full ${getUsageColor(getUsagePercentage(userPlanInfo.usage.monthlySchedules, userPlanInfo.planDetails.maxSchedulesPerMonth)).includes('red') ? 'bg-red-500' : getUsageColor(getUsagePercentage(userPlanInfo.usage.monthlySchedules, userPlanInfo.planDetails.maxSchedulesPerMonth)).includes('amber') ? 'bg-amber-500' : 'bg-green-500'}`}
+                                style={{ width: `${getUsagePercentage(userPlanInfo.usage.monthlySchedules, userPlanInfo.planDetails.maxSchedulesPerMonth)}%` }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="text-xs text-slate-600 mb-1">
+                            Usadas: {userPlanInfo.usage.totalSchedules} / {userPlanInfo.planDetails.maxSchedulesTotal || '∞'}
+                          </div>
+                          {userPlanInfo.planDetails.maxSchedulesTotal && (
+                            <div className="w-full bg-slate-200 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full ${getUsageColor(getUsagePercentage(userPlanInfo.usage.totalSchedules, userPlanInfo.planDetails.maxSchedulesTotal)).includes('red') ? 'bg-red-500' : getUsageColor(getUsagePercentage(userPlanInfo.usage.totalSchedules, userPlanInfo.planDetails.maxSchedulesTotal)).includes('amber') ? 'bg-amber-500' : 'bg-green-500'}`}
+                                style={{ width: `${getUsagePercentage(userPlanInfo.usage.totalSchedules, userPlanInfo.planDetails.maxSchedulesTotal)}%` }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Addresses Usage */}
+                <div className="bg-slate-50 p-3 rounded-lg border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-slate-700">Endereços</span>
+                  </div>
+                  <div className="text-xs text-slate-600 mb-1">
+                    Usados: {userPlanInfo.usage.totalAddresses} / {userPlanInfo.planDetails.maxAddresses === 'unlimited' ? '∞' : userPlanInfo.planDetails.maxAddresses}
+                  </div>
+                  {userPlanInfo.planDetails.maxAddresses !== 'unlimited' && (
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${getUsageColor(getUsagePercentage(userPlanInfo.usage.totalAddresses, userPlanInfo.planDetails.maxAddresses as number)).includes('red') ? 'bg-red-500' : getUsageColor(getUsagePercentage(userPlanInfo.usage.totalAddresses, userPlanInfo.planDetails.maxAddresses as number)).includes('amber') ? 'bg-amber-500' : 'bg-green-500'}`}
+                        style={{ width: `${getUsagePercentage(userPlanInfo.usage.totalAddresses, userPlanInfo.planDetails.maxAddresses as number)}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Credits */}
+                <div className="bg-slate-50 p-3 rounded-lg border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BarChart3 className="w-4 h-4 text-purple-600" />
+                    <span className="text-sm font-medium text-slate-700">Créditos</span>
+                  </div>
+                  <div className="text-xs text-slate-600">
+                    Inclusos: {userPlanInfo.planDetails.credits} créditos
+                  </div>
+                  <div className="text-xs text-purple-600 font-medium mt-1">
+                    Renovam mensalmente
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Profile Image */}
           <div className="flex flex-col items-center gap-4">
             <div 
