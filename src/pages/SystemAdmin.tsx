@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useEffect, useCallback } from "react";
-import { Users, BarChart3, Settings, MessageCircle, Edit, Trash2, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, BarChart3, Settings, MessageCircle, Edit, Trash2, X, Search, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { AdminLogin } from "@/components/admin/AdminLogin";
@@ -487,7 +487,7 @@ const UsersManagement = () => {
                 <thead>
                   <tr className="border-b border-slate-200">
                     <th className="pb-3 text-sm font-semibold text-slate-700">Nome</th>
-                    <th className="pb-3 text-sm font-semibold text-slate-700">E-mail</th>
+                    <th className="pb-3 text-sm font-semibold text-slate-700">Telefone</th>
                     <th className="pb-3 text-sm font-semibold text-slate-700">Especialidade</th>
                     <th className="pb-3 text-sm font-semibold text-slate-700">Plano</th>
                     <th className="pb-3 text-sm font-semibold text-slate-700">Status</th>
@@ -498,7 +498,23 @@ const UsersManagement = () => {
                   {currentUsers.map((user) => (
                     <tr key={user._id} className="border-b border-slate-100 hover:bg-slate-50">
                       <td className="py-3 text-sm text-slate-800 font-medium">{user.fullName}</td>
-                      <td className="py-3 text-sm text-slate-600">{user.email}</td>
+                      <td className="py-3 text-sm text-slate-600">
+                        {user.phone ? (
+                          <button
+                            onClick={() => {
+                              const cleanPhone = user.phone.replace(/\D/g, '');
+                              const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+                              window.open(`https://api.whatsapp.com/send/?phone=${formattedPhone}`, '_blank');
+                            }}
+                            className="text-green-600 hover:text-green-800 hover:underline transition-colors"
+                            title="Abrir WhatsApp"
+                          >
+                            {user.phone}
+                          </button>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </td>
                       <td className="py-3 text-sm text-slate-600">{user.specialty || '-'}</td>
                       <td className="py-3 text-sm text-slate-600">
                         <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
@@ -516,6 +532,15 @@ const UsersManagement = () => {
                       </td>
                       <td className="py-3">
                         <div className="flex items-center gap-2 justify-center">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => window.open(`https://www.clicksaudeagendamento.com.br/${user._id}/agendamento`, '_blank')}
+                            className="h-8 w-8 p-0 border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"
+                            title="Página pública de agendamentos"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </Button>
                           <Button 
                             variant="outline" 
                             size="sm"
