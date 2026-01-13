@@ -633,7 +633,7 @@ export const AdminScheduleForm = ({ onClose, onScheduleCreated, initialDate }: A
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="flex-1 h-12 bg-white border-slate-200 text-slate-600 hover:bg-slate-50 text-sm sm:text-base"
+            className="flex-1 h-12 bg-white border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 text-sm sm:text-base"
           >
             Cancelar
           </Button>

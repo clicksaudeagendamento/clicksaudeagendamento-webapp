@@ -619,7 +619,7 @@ export const AdminSchedules = () => {
               <Button
                 variant="outline"
                 onClick={() => setConfirmModal({ open: false, type: null })}
-                className="flex-1 bg-white border-slate-200"
+                className="flex-1 bg-white border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
               >
                 Cancelar
               </Button>
@@ -632,7 +632,7 @@ export const AdminSchedules = () => {
                   }
                   setConfirmModal({ open: false, type: null });
                 }}
-                className="flex-1 bg-red-600 text-white hover:bg-red-700 border-red-600"
+                className="flex-1 bg-red-600 text-white hover:bg-red-700 border-red-600 hover:border-red-700"
                 disabled={loading}
               >
                 Excluir

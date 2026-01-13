@@ -311,7 +311,7 @@ export const AdminAddresses = () => {
                   onClick={cancelAdd}
                   disabled={loading}
                   size="sm"
-                  className="w-full sm:w-auto order-2 sm:order-1"
+                  className="w-full sm:w-auto order-2 sm:order-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Cancelar
@@ -362,7 +362,7 @@ export const AdminAddresses = () => {
                         onClick={cancelEdit}
                         disabled={loading}
                         size="sm"
-                        className="w-full sm:w-auto"
+                        className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
                       >
                         <X className="w-4 h-4 mr-2" />
                         Cancelar
@@ -430,7 +430,7 @@ export const AdminAddresses = () => {
                           size="sm"
                           onClick={() => handleDelete(address)}
                           disabled={loading}
-                          className="border-red-200 text-red-600 hover:bg-red-50 flex-1 sm:flex-none w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-3 h-8 sm:h-9"
+                          className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 flex-1 sm:flex-none w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-3 h-8 sm:h-9"
                         >
                           <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-0" />
                           <span className="sm:hidden">Excluir</span>
@@ -482,14 +482,14 @@ export const AdminAddresses = () => {
                 variant="outline"
                 onClick={cancelDelete}
                 disabled={loading}
-                className="flex-1"
+                className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={confirmDelete}
                 disabled={loading}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                className="flex-1 bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700 text-white"
               >
                 {loading ? (
                   <>

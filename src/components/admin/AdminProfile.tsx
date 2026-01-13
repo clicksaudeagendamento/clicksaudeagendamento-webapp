@@ -630,7 +630,7 @@ export const AdminProfile = () => {
           <Button
             variant="outline"
             onClick={handleCancel}
-            className="bg-white border border-red-200 text-red-600 hover:bg-red-50"
+            className="bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
             disabled={isSaving}
           >
             Cancelar
