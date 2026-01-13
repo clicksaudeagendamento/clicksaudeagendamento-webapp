@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { useEffect } from "react";
-import { Users, BarChart3, Settings, MessageCircle } from "lucide-react";
+import { useEffect, useCallback } from "react";
+import { Users, BarChart3, Settings, MessageCircle, Edit, Trash2, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { adminDashboardService, DashboardMetrics, SpecialtyDistribution } from "@/services/adminDashboardService";
+import { userService, User } from "@/services/userService";
+import { PLANS, type PlanType } from "@/lib/constants";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 
 type SystemAdminTab = 'dashboard' | 'users' | 'whatsapp' | 'settings';
 
@@ -277,49 +283,449 @@ const SystemDashboard = () => {
 };
 
 const UsersManagement = () => {
-  const users = [
-    { id: 1, name: 'Dr. João Silva', specialty: 'Cardiologia', register: 'CRM-12345', email: 'joao@email.com', status: 'Ativo' },
-    { id: 2, name: 'Dra. Maria Santos', specialty: 'Dermatologia', register: 'CRM-67890', email: 'maria@email.com', status: 'Ativo' },
-    { id: 3, name: 'Dr. Pedro Costa', specialty: 'Pediatria', register: 'CRM-54321', email: 'pedro@email.com', status: 'Inativo' },
-    { id: 4, name: 'Dra. Ana Paula', specialty: 'Ginecologia', register: 'CRM-98765', email: 'ana@email.com', status: 'Ativo' }
-  ];
+  const ITEMS_PER_PAGE = 10;
+  
+  const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [editData, setEditData] = useState<{
+    accepted: boolean;
+    plan: PlanType;
+  }>({ accepted: true, plan: 'demo' });
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const getToken = () => localStorage.getItem('access_token') || '';
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = getToken();
+      const usersData = await userService.getAllUsers(token);
+      // Filter only customers (professionals)
+      const customers = usersData.filter(user => user.role === 'customer');
+      setUsers(customers);
+      setFilteredUsers(customers);
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+      setError('Erro ao carregar os usuários. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // Filter users based on search term
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredUsers(users);
+    } else {
+      const filtered = users.filter(user => 
+        user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.specialty && user.specialty.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      setFilteredUsers(filtered);
+    }
+    setCurrentPage(1); // Reset to first page when search changes
+  }, [searchTerm, users]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handleEdit = (user: User) => {
+    setSelectedUser(user);
+    setEditData({
+      accepted: user.accepted,
+      plan: (typeof user.plan === 'string' ? user.plan : user.plan?.name || 'demo') as PlanType
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleDelete = (user: User) => {
+    setSelectedUser(user);
+    setDeleteModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedUser) return;
+    
+    try {
+      setUpdating(true);
+      const token = getToken();
+      await userService.updateUserById(selectedUser._id, {
+        accepted: editData.accepted,
+        plan: editData.plan
+      }, token);
+      
+      setEditModalOpen(false);
+      setSelectedUser(null);
+      await fetchUsers(); // Reload users
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      setError('Erro ao atualizar usuário. Tente novamente.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedUser) return;
+    
+    try {
+      setDeleting(true);
+      const token = getToken();
+      await userService.removeUser(selectedUser._id, token);
+      
+      setDeleteModalOpen(false);
+      setSelectedUser(null);
+      
+      // Adjust current page if needed after deletion
+      const newFilteredUsers = filteredUsers.filter(user => user._id !== selectedUser._id);
+      const newTotalPages = Math.ceil(newFilteredUsers.length / ITEMS_PER_PAGE);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      }
+      
+      await fetchUsers(); // Reload users
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
+      setError('Erro ao excluir usuário. Tente novamente.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const formatPlanName = (plan: string | { name: string } | null | undefined): string => {
+    if (typeof plan === 'string') {
+      return PLANS[plan as PlanType]?.name.toUpperCase() || plan.toUpperCase();
+    }
+    if (plan && typeof plan === 'object' && plan.name) {
+      return plan.name.toUpperCase();
+    }
+    return 'DEMO';
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-slate-600">Carregando usuários...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="text-red-600 mb-2">{error}</div>
+            <Button onClick={fetchUsers} variant="outline" size="sm">
+              Tentar novamente
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
-      <h2 className="text-xl font-bold text-slate-800 mb-4">Gestão de Usuários</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-slate-200">
-              <th className="pb-3 text-sm font-semibold text-slate-700">Nome</th>
-              <th className="pb-3 text-sm font-semibold text-slate-700">Especialidade</th>
-              <th className="pb-3 text-sm font-semibold text-slate-700">Registro</th>
-              <th className="pb-3 text-sm font-semibold text-slate-700">E-mail</th>
-              <th className="pb-3 text-sm font-semibold text-slate-700">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id} className="border-b border-slate-100">
-                <td className="py-3 text-sm text-slate-800">{user.name}</td>
-                <td className="py-3 text-sm text-slate-600">{user.specialty}</td>
-                <td className="py-3 text-sm text-slate-600">{user.register}</td>
-                <td className="py-3 text-sm text-slate-600">{user.email}</td>
-                <td className="py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    user.status === 'Ativo' 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-red-100 text-red-700'
-                  }`}>
-                    {user.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <>
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <h2 className="text-xl font-bold text-slate-800">Gestão de Usuários</h2>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
+              placeholder="Buscar usuários..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-64"
+            />
+          </div>
+        </div>
+        
+        {currentUsers.length === 0 && !loading ? (
+          <div className="text-center py-8 text-slate-500">
+            {searchTerm ? 'Nenhum usuário encontrado para a busca.' : 'Nenhum usuário encontrado'}
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    <th className="pb-3 text-sm font-semibold text-slate-700">Nome</th>
+                    <th className="pb-3 text-sm font-semibold text-slate-700">E-mail</th>
+                    <th className="pb-3 text-sm font-semibold text-slate-700">Especialidade</th>
+                    <th className="pb-3 text-sm font-semibold text-slate-700">Plano</th>
+                    <th className="pb-3 text-sm font-semibold text-slate-700">Status</th>
+                    <th className="pb-3 text-sm font-semibold text-slate-700 text-center">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentUsers.map((user) => (
+                    <tr key={user._id} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="py-3 text-sm text-slate-800 font-medium">{user.fullName}</td>
+                      <td className="py-3 text-sm text-slate-600">{user.email}</td>
+                      <td className="py-3 text-sm text-slate-600">{user.specialty || '-'}</td>
+                      <td className="py-3 text-sm text-slate-600">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                          {formatPlanName(user.plan)}
+                        </span>
+                      </td>
+                      <td className="py-3">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          user.accepted 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-red-100 text-red-700'
+                        }`}>
+                          {user.accepted ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
+                      <td className="py-3">
+                        <div className="flex items-center gap-2 justify-center">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEdit(user)}
+                            className="h-8 w-8 p-0 border-slate-300 hover:border-blue-400 hover:bg-blue-50"
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDelete(user)}
+                            className="h-8 w-8 p-0 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-400"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6">
+                <div className="text-sm text-slate-600">
+                  Mostrando {startIndex + 1} a {Math.min(endIndex, filteredUsers.length)} de {filteredUsers.length} usuários
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronLeft className="w-3 h-3" />
+                  </Button>
+                  
+                  {/* Page numbers */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                      if (totalPages <= 7) {
+                        // Show all pages if 7 or fewer
+                        return (
+                          <Button
+                            key={page}
+                            variant={page === currentPage ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => goToPage(page)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        );
+                      } else {
+                        // Show ellipsis logic for more than 7 pages
+                        if (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        ) {
+                          return (
+                            <Button
+                              key={page}
+                              variant={page === currentPage ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => goToPage(page)}
+                              className="h-8 w-8 p-0"
+                            >
+                              {page}
+                            </Button>
+                          );
+                        } else if (
+                          page === currentPage - 2 ||
+                          page === currentPage + 2
+                        ) {
+                          return (
+                            <span key={page} className="text-slate-500 px-1">
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      }
+                    })}
+                  </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronRight className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
-    </div>
+
+      {/* Edit Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+          </DialogHeader>
+          
+          {selectedUser && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  Usuário: {selectedUser.fullName}
+                </label>
+                <label className="text-xs text-slate-500">
+                  E-mail: {selectedUser.email}
+                </label>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  Status
+                </label>
+                <Select 
+                  value={editData.accepted ? 'ativo' : 'inativo'} 
+                  onValueChange={(value) => setEditData(prev => ({ ...prev, accepted: value === 'ativo' }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  Plano
+                </label>
+                <Select 
+                  value={editData.plan} 
+                  onValueChange={(value) => setEditData(prev => ({ ...prev, plan: value as PlanType }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="demo">Demo (Gratuito)</SelectItem>
+                    <SelectItem value="basic">Básico (R$ 67/mês)</SelectItem>
+                    <SelectItem value="professional">Profissional (R$ 99/mês)</SelectItem>
+                    <SelectItem value="enterprise">Empresarial (R$ 159/mês)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setEditModalOpen(false)}
+              disabled={updating}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSaveEdit}
+              disabled={updating}
+              className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+            >
+              {updating ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza de que deseja excluir o usuário <strong>{selectedUser?.fullName}</strong>?
+              <br />
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

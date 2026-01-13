@@ -1,4 +1,5 @@
 import { apiRequest } from './api';
+import { PlanType } from '@/lib/constants';
 
 export interface RegisterUserPayload {
   fullName: string;
@@ -21,6 +22,7 @@ export interface UpdateUserPayload {
   instagram?: string;
   profileImage?: string;
   accepted?: boolean;
+  plan?: PlanType;
 }
 
 export interface RegisterUserResponse {
