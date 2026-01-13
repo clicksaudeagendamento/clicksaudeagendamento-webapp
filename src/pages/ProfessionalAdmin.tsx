@@ -102,67 +102,75 @@ export const ProfessionalAdmin = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="bg-white rounded-xl shadow-lg mb-4 sm:mb-6 border border-slate-200">
+        <div className="bg-white rounded-xl shadow-lg mb-4 sm:mb-6 border border-slate-200 overflow-hidden">
           <div className="grid grid-cols-4">
             <button
               onClick={() => setActiveTab('schedules')}
-              className={`py-3 sm:py-4 px-4 sm:px-6 font-medium rounded-l-xl transition-colors ${
+              className={`py-2 sm:py-4 px-1 sm:px-6 font-medium transition-colors flex flex-col items-center justify-center min-h-[60px] sm:min-h-[80px] ${
                 activeTab === 'schedules'
                   ? 'bg-primary text-white'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Calendar className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+              <Calendar className={`w-4 h-4 sm:w-5 sm:h-5 mb-1 flex-shrink-0 ${
                 activeTab === 'schedules' ? 'text-white' : ''
               }`} />
-              <span className={`block text-xs sm:text-sm ${
+              <span className={`text-[10px] sm:text-sm font-medium leading-tight text-center ${
                 activeTab === 'schedules' ? 'text-white' : ''
-              }`}>Agendas</span>
+              }`}>
+                Agendas
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('appointments')}
-              className={`py-3 sm:py-4 px-4 sm:px-6 font-medium transition-colors ${
+              className={`py-2 sm:py-4 px-1 sm:px-6 font-medium transition-colors flex flex-col items-center justify-center min-h-[60px] sm:min-h-[80px] ${
                 activeTab === 'appointments'
                   ? 'bg-primary text-white'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Clock className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+              <Clock className={`w-4 h-4 sm:w-5 sm:h-5 mb-1 flex-shrink-0 ${
                 activeTab === 'appointments' ? 'text-white' : ''
               }`} />
-              <span className={`block text-xs sm:text-sm ${
+              <span className={`text-[10px] sm:text-sm font-medium leading-tight text-center ${
                 activeTab === 'appointments' ? 'text-white' : ''
-              }`}>Agendamentos</span>
+              }`}>
+                Agendamentos
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('addresses')}
-              className={`py-3 sm:py-4 px-4 sm:px-6 font-medium transition-colors ${
+              className={`py-2 sm:py-4 px-1 sm:px-6 font-medium transition-colors flex flex-col items-center justify-center min-h-[60px] sm:min-h-[80px] ${
                 activeTab === 'addresses'
                   ? 'bg-primary text-white'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <MapPin className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+              <MapPin className={`w-4 h-4 sm:w-5 sm:h-5 mb-1 flex-shrink-0 ${
                 activeTab === 'addresses' ? 'text-white' : ''
               }`} />
-              <span className={`block text-xs sm:text-sm ${
+              <span className={`text-[10px] sm:text-sm font-medium leading-tight text-center ${
                 activeTab === 'addresses' ? 'text-white' : ''
-              }`}>Endereços</span>
+              }`}>
+                Endereços
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('profile')}
-              className={`py-3 sm:py-4 px-4 sm:px-6 font-medium rounded-r-xl transition-colors ${
+              className={`py-2 sm:py-4 px-1 sm:px-6 font-medium transition-colors flex flex-col items-center justify-center min-h-[60px] sm:min-h-[80px] ${
                 activeTab === 'profile'
                   ? 'bg-primary text-white'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Settings className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+              <Settings className={`w-4 h-4 sm:w-5 sm:h-5 mb-1 flex-shrink-0 ${
                 activeTab === 'profile' ? 'text-white' : ''
               }`} />
-              <span className={`block text-xs sm:text-sm ${
+              <span className={`text-[10px] sm:text-sm font-medium leading-tight text-center ${
                 activeTab === 'profile' ? 'text-white' : ''
-              }`}>Perfil</span>
+              }`}>
+                Perfil
+              </span>
             </button>
           </div>
         </div>
