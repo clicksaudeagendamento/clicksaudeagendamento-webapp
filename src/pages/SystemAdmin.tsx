@@ -4,6 +4,7 @@ import { Users, BarChart3, Settings, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { AdminLogin } from "@/components/admin/AdminLogin";
+import { adminDashboardService, DashboardMetrics, SpecialtyDistribution } from "@/services/adminDashboardService";
 
 type SystemAdminTab = 'dashboard' | 'users' | 'whatsapp' | 'settings';
 
@@ -143,14 +144,66 @@ export const SystemAdmin = () => {
 };
 
 const SystemDashboard = () => {
-  const specialtyData = [
-    { name: 'Cardiologia', count: 15, color: '#3B82F6' },
-    { name: 'Dermatologia', count: 12, color: '#059669' },
-    { name: 'Pediatria', count: 18, color: '#7C3AED' },
-    { name: 'Ortopedia', count: 10, color: '#DC2626' },
-    { name: 'Ginecologia', count: 14, color: '#EA580C' },
-    { name: 'Outros', count: 8, color: '#6B7280' }
-  ];
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [specialties, setSpecialties] = useState<SpecialtyDistribution[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [metricsData, specialtiesData] = await Promise.all([
+          adminDashboardService.getMetrics(),
+          adminDashboardService.getSpecialtiesDistribution()
+        ]);
+        setMetrics(metricsData);
+        setSpecialties(specialtiesData);
+      } catch (error) {
+        console.error('Erro ao carregar dados do dashboard:', error);
+        setError('Erro ao carregar os dados. Tente novamente.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-slate-600">Carregando dados...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-600">{error}</div>
+      </div>
+    );
+  }
+
+  if (!metrics) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-slate-600">Nenhum dado encontrado</div>
+      </div>
+    );
+  }
+
+  // Gera cores dinamicamente para as especialidades
+  const colors = ['#3B82F6', '#059669', '#7C3AED', '#DC2626', '#EA580C', '#F59E0B', '#10B981', '#6366F1', '#8B5CF6', '#EC4899'];
+  const specialtyData = specialties.map((specialty, index) => ({
+    name: specialty.specialty,
+    count: specialty.count,
+    percentage: specialty.percentage,
+    color: colors[index % colors.length]
+  }));
+
+  const maxCount = Math.max(...specialties.map(s => s.count), 1);
 
   return (
     <div className="space-y-6">
@@ -158,52 +211,66 @@ const SystemDashboard = () => {
         <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
           <div className="bg-blue-50 p-4 rounded-lg">
             <h3 className="font-semibold text-blue-800">Profissionais Ativos</h3>
-            <p className="text-2xl font-bold text-blue-600">127</p>
+            <p className="text-2xl font-bold text-blue-600">{metrics.activeProfessionals}</p>
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
           <div className="bg-green-50 p-4 rounded-lg">
             <h3 className="font-semibold text-green-800">Agendamentos Hoje</h3>
-            <p className="text-2xl font-bold text-green-600">43</p>
+            <p className="text-2xl font-bold text-green-600">{metrics.todayAppointments}</p>
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
           <div className="bg-purple-50 p-4 rounded-lg">
             <h3 className="font-semibold text-purple-800">Receita Mensal</h3>
-            <p className="text-2xl font-bold text-purple-600">R$ 6.350</p>
+            <p className="text-2xl font-bold text-purple-600">
+              R$ {metrics.monthlyRevenue.toLocaleString('pt-BR', { 
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2 
+              })}
+            </p>
           </div>
         </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
         <h3 className="text-lg font-bold text-slate-800 mb-4">Profissionais por Especialidade</h3>
-        <div className="space-y-4">
-          {specialtyData.map((specialty) => (
-            <div key={specialty.name} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: specialty.color }}
-                />
-                <span className="font-medium text-slate-700">{specialty.name}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-32 bg-slate-200 rounded-full h-2">
+        {specialtyData.length > 0 ? (
+          <div className="space-y-4">
+            {specialtyData.map((specialty) => (
+              <div key={specialty.name} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   <div 
-                    className="h-2 rounded-full"
-                    style={{ 
-                      backgroundColor: specialty.color,
-                      width: `${(specialty.count / 20) * 100}%`
-                    }}
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: specialty.color }}
                   />
+                  <span className="font-medium text-slate-700">{specialty.name}</span>
                 </div>
-                <span className="text-sm font-bold text-slate-600 w-8 text-right">
-                  {specialty.count}
-                </span>
+                <div className="flex items-center gap-3">
+                  <div className="w-32 bg-slate-200 rounded-full h-2">
+                    <div 
+                      className="h-2 rounded-full"
+                      style={{ 
+                        backgroundColor: specialty.color,
+                        width: `${(specialty.count / maxCount) * 100}%`
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm font-bold text-slate-600 w-8 text-right">
+                    {specialty.count}
+                  </span>
+                  <span className="text-xs text-slate-500 w-12 text-right">
+                    ({specialty.percentage}%)
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-slate-500">
+            Nenhuma especialidade encontrada
+          </div>
+        )}
       </div>
     </div>
   );
