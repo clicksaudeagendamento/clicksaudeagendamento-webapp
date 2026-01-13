@@ -1,5 +1,5 @@
 
-import { CheckCircle, Calendar, Clock, User, Phone, MapPin, Heart } from "lucide-react";
+import { CheckCircle, Calendar, Clock, User, Phone, MapPin, Heart, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AppointmentData } from "@/pages/Index";
 import { useAppointments } from "@/contexts/AppointmentContext";
@@ -20,6 +20,30 @@ export const ConfirmationScreen = ({ appointmentData }: ConfirmationScreenProps)
 
   const handleNewAppointment = () => {
     window.location.reload();
+  };
+
+  const handleTrackAppointment = () => {
+    const formattedDateMsg = appointmentData.date?.toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    const message =
+      `Olá! 👋\n\n` +
+      `Gostaria de acompanhar meu *agendamento* criado através do sistema:\n\n` +
+      `📅 *Data:* ${formattedDateMsg}\n` +
+      `🕒 *Horário:* ${appointmentData.time}\n` +
+      `👤 *Paciente:* ${appointmentData.name}\n` +
+      `📱 *Contato:* ${appointmentData.phone1}\n` +
+      `${appointmentData.address ? `📍 *Local:* ${appointmentData.address}\n` : ''}`;
+
+    const encodedMessage = encodeURIComponent(message);
+
+    const whatsappUrl = `https://api.whatsapp.com/send/?phone=558594245460&text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -165,8 +189,16 @@ export const ConfirmationScreen = ({ appointmentData }: ConfirmationScreenProps)
           </div>
         </div>
 
-        {/* Action Button */}
-        <div className="pb-4 sm:pb-8">
+        {/* Action Buttons */}
+        <div className="pb-4 sm:pb-8 space-y-3">
+          <Button
+            onClick={handleTrackAppointment}
+            className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl transform hover:scale-[1.02] bg-green-600 hover:bg-green-700 border border-green-600 hover:border-green-700 text-white"
+          >
+            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+            Acompanhar Agendamento via WhatsApp
+          </Button>
+          
           <Button
             onClick={handleNewAppointment}
             className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl transform hover:scale-[1.02]"
