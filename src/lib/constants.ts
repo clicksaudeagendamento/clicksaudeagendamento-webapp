@@ -31,7 +31,7 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     isPeriodic: false
   },
   basic: { 
-    name: 'one', 
+    name: 'basic', 
     price: 67, 
     credits: 80, 
     maxSchedulesPerMonth: 80,
@@ -39,7 +39,7 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     isPeriodic: true
   },
   professional: { 
-    name: 'pro', 
+    name: 'professional', 
     price: 99, 
     credits: 120, 
     maxSchedulesPerMonth: 120,
@@ -47,7 +47,7 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     isPeriodic: true
   },
   enterprise: { 
-    name: 'prime', 
+    name: 'enterprise', 
     price: 159, 
     credits: 300, 
     maxSchedulesPerMonth: 300,

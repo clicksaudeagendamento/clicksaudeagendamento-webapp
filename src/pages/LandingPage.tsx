@@ -676,13 +676,13 @@ export const LandingPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
-            {/* ClickSaúde One */}
+            {/* ClickSaúde Basic */}
             <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-6 sm:p-8 border border-slate-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
               <div className="text-center mb-6">
                 <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 rounded-full mb-3">
                   <span className="text-2xl sm:text-3xl">🩺</span>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">ClickSaúde One</h3>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">ClickSaúde Basic</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mb-4">
                   Organização sem complicação para quem está começando no digital 💛
                 </p>
@@ -716,7 +716,7 @@ export const LandingPage = () => {
               <p className="text-sm italic text-slate-600 mb-4 text-center">Simples, eficiente e feito para o seu dia a dia</p>
             </div>
 
-            {/* ClickSaúde Pro */}
+            {/* ClickSaúde Professional */}
             <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-6 sm:p-8 border-2 border-primary relative overflow-hidden hover:shadow-3xl transition-all duration-300 hover:-translate-y-1 md:scale-105">
               <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-semibold rounded-bl-lg">
                 Mais Popular
@@ -726,7 +726,7 @@ export const LandingPage = () => {
                 <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-green-100 rounded-full mb-3">
                   <span className="text-2xl sm:text-3xl">⚕️</span>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">ClickSaúde Pro</h3>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">ClickSaúde Professional</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mb-4">
                   Mais flexibilidade, mais consultas e mais crescimento 🚀
                 </p>
@@ -760,13 +760,13 @@ export const LandingPage = () => {
               <p className="text-sm italic text-slate-600 mb-4 text-center">Mais flexibilidade para quem não para de crescer</p>
             </div>
 
-            {/* ClickSaúde Prime */}
+            {/* ClickSaúde Enterprise */}
             <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-6 sm:p-8 border border-slate-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
               <div className="text-center mb-6">
                 <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-purple-100 rounded-full mb-3">
                   <span className="text-2xl sm:text-3xl">🏥</span>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">ClickSaúde Prime</h3>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">ClickSaúde Enterprise</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mb-4">
                   Performance máxima para quem precisa de total liberdade ⚡
                 </p>
