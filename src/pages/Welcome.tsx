@@ -107,8 +107,10 @@ export const Welcome = () => {
         description: "Código enviado via WhatsApp!",
         variant: "success",
       });
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || "Erro ao enviar código de verificação";
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Erro ao enviar código de verificação";
       toast({
         title: "Erro",
         description: errorMessage,
@@ -293,23 +295,13 @@ export const Welcome = () => {
           </div>
           
           {currentStep === totalSteps ? (
-            userPhone ? (
-              <Button
-                onClick={handleSendVerificationCode}
-                className="bg-primary text-white hover:bg-primary/90 text-sm sm:text-base px-3 sm:px-4"
-              >
-                Confirmar Cadastro
-                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleLogin}
-                className="bg-primary text-white hover:bg-primary/90 text-sm sm:text-base px-3 sm:px-4"
-              >
-                Fazer Login
-                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-              </Button>
-            )
+            <Button
+              onClick={handleLogin}
+              className="bg-primary text-white hover:bg-primary/90 text-sm sm:text-base px-3 sm:px-4"
+            >
+              Fazer Login
+              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+            </Button>
           ) : (
             <Button
               onClick={handleNext}

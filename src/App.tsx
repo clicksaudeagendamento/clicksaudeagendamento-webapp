@@ -7,6 +7,7 @@ import { SEO } from "@/components/SEO";
 import { ProtectedWelcomeRoute } from "@/components/ProtectedWelcomeRoute";
 import { LandingPage } from "@/pages/LandingPage";
 import { Welcome } from "@/pages/Welcome";
+import { ForgotPassword } from "@/pages/ForgotPassword";
 import { ProfessionalBooking } from "@/pages/ProfessionalBooking";
 import { ProfessionalAdmin } from "@/pages/ProfessionalAdmin";
 import { SystemAdmin } from "@/pages/SystemAdmin";
@@ -23,6 +24,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<AdminLoginPage />} />
+            <Route path="/recuperar-senha" element={<ForgotPassword />} />
             <Route path="/boas-vindas" element={
               <ProtectedWelcomeRoute>
                 <Welcome />

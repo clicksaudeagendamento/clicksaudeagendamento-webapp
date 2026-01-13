@@ -74,5 +74,13 @@ export const authService = {
       path: '/auth/verify-code',
       data: { phone, code }
     });
+  },
+
+  forgotPassword: async (email: string): Promise<{ message: string }> => {
+    return apiRequest<{ message: string }>({
+      method: 'POST',
+      path: '/auth/forgot-password',
+      data: { email }
+    });
   }
 }; 

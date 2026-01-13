@@ -4,6 +4,7 @@ import { Lock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
 
 interface AdminLoginProps {
   onLogin: (username: string, password: string) => Promise<boolean>;
@@ -90,6 +91,15 @@ export const AdminLogin = ({ onLogin, error: externalError }: AdminLoginProps) =
             >
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
+
+            <div className="text-center mt-4">
+              <Link
+                to="/recuperar-senha"
+                className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+              >
+                Esqueci minha senha
+              </Link>
+            </div>
           </form>
         </div>
       </div>
