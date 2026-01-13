@@ -252,7 +252,7 @@ export const AdminAddresses = () => {
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-slate-200">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Endereços</h2>
             <p className="text-slate-600 text-sm sm:text-base">
@@ -269,7 +269,7 @@ export const AdminAddresses = () => {
                 }
                 setIsAdding(true);
               }}
-              className="h-10 sm:h-12 px-4 sm:px-6 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm sm:text-base"
+              className="h-10 sm:h-12 px-4 sm:px-6 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
               style={{
                 backgroundColor: profile.primaryColor || DEFAULT_PRIMARY_COLOR,
                 color: 'white'
@@ -305,12 +305,13 @@ export const AdminAddresses = () => {
                   disabled={loading}
                 />
               </div>
-              <div className="flex gap-2 justify-end">
+              <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
                 <Button
                   variant="outline"
                   onClick={cancelAdd}
                   disabled={loading}
                   size="sm"
+                  className="w-full sm:w-auto order-2 sm:order-1"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Cancelar
@@ -318,7 +319,7 @@ export const AdminAddresses = () => {
                 <Button
                   onClick={handleCreate}
                   disabled={loading || !newAddress.trim()}
-                  className="bg-primary text-white hover:bg-primary/90"
+                  className="bg-primary text-white hover:bg-primary/90 w-full sm:w-auto order-1 sm:order-2"
                   size="sm"
                 >
                   <Save className="w-4 h-4 mr-2" />
@@ -355,12 +356,13 @@ export const AdminAddresses = () => {
                       className="w-full bg-white border-slate-200"
                       disabled={loading}
                     />
-                    <div className="flex gap-2 justify-end">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
                       <Button
                         variant="outline"
                         onClick={cancelEdit}
                         disabled={loading}
                         size="sm"
+                        className="w-full sm:w-auto"
                       >
                         <X className="w-4 h-4 mr-2" />
                         Cancelar
@@ -368,7 +370,7 @@ export const AdminAddresses = () => {
                       <Button
                         onClick={() => handleUpdate(address._id)}
                         disabled={loading || !editAddress.trim()}
-                        className="bg-primary text-white hover:bg-primary/90"
+                        className="bg-primary text-white hover:bg-primary/90 w-full sm:w-auto"
                         size="sm"
                       >
                         <Save className="w-4 h-4 mr-2" />
@@ -378,52 +380,62 @@ export const AdminAddresses = () => {
                   </div>
                 ) : (
                   // View Mode
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-start gap-3">
-                        <MapPin className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
-                          address.isActive ? 'text-primary' : 'text-slate-400'
-                        }`} />
-                        <div className={address.isActive ? '' : 'opacity-50'}>
-                          <p className="text-slate-800 font-medium">{address.address}</p>
-                          <p className="text-slate-500 text-sm mt-1">
-                            {address.isActive ? 'Ativo' : 'Inativo'}
-                          </p>
-                        </div>
+                  <div className="space-y-3 sm:space-y-0">
+                    {/* Content Section */}
+                    <div className="flex items-start gap-3">
+                      <MapPin className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                        address.isActive ? 'text-primary' : 'text-slate-400'
+                      }`} />
+                      <div className={`flex-1 min-w-0 ${
+                        address.isActive ? '' : 'opacity-50'
+                      }`}>
+                        <p className="text-slate-800 font-medium break-words">
+                          {address.address}
+                        </p>
+                        <p className="text-slate-500 text-sm mt-1">
+                          {address.isActive ? 'Ativo' : 'Inativo'}
+                        </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    
+                    {/* Actions Section */}
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end sm:items-center sm:-mt-3">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleToggleActive(address._id, address.isActive)}
                         disabled={loading}
-                        className={
+                        className={`w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-4 h-8 sm:h-9 ${
                           address.isActive
                             ? 'border-orange-200 text-orange-600 hover:bg-orange-50'
                             : 'border-green-200 text-green-600 hover:bg-green-50'
-                        }
+                        }`}
                       >
                         {address.isActive ? 'Desativar' : 'Ativar'}
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => startEdit(address)}
-                        disabled={loading}
-                        className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(address)}
-                        disabled={loading}
-                        className="border-red-200 text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      
+                      <div className="flex gap-2 sm:gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => startEdit(address)}
+                          disabled={loading}
+                          className="border-blue-200 text-blue-600 hover:bg-blue-50 flex-1 sm:flex-none w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-3 h-8 sm:h-9"
+                        >
+                          <Edit2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-0" />
+                          <span className="sm:hidden">Editar</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(address)}
+                          disabled={loading}
+                          className="border-red-200 text-red-600 hover:bg-red-50 flex-1 sm:flex-none w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-3 h-8 sm:h-9"
+                        >
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-0" />
+                          <span className="sm:hidden">Excluir</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
