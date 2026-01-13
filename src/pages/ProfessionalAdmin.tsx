@@ -177,28 +177,36 @@ export const ProfessionalAdmin = () => {
 
         {/* Address Selector - Only show if multiple addresses and not on addresses/profile tabs */}
         {addresses.length > 1 && activeTab !== 'addresses' && activeTab !== 'profile' && (
-          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-slate-200">
-            <div className="flex items-center gap-3 mb-3">
-              <MapPin className="w-5 h-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-slate-800">Selecione o local de atendimento</h3>
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 border border-slate-200 overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                <h3 className="text-base sm:text-lg font-semibold text-slate-800 break-words leading-tight">
+                  Selecione o local de atendimento
+                </h3>
+              </div>
             </div>
-            <select
-              value={selectedAddressId || ''}
-              onChange={(e) => setSelectedAddressId(e.target.value || null)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-800"
-            >
-              <option value="">Selecione um endereço...</option>
-              {addresses.filter(addr => addr.isActive).map((addr) => (
-                <option key={addr._id} value={addr._id}>
-                  {addr.address}
-                </option>
-              ))}
-            </select>
-            {!selectedAddressId && (
-              <p className="mt-2 text-sm text-amber-600">
-                Por favor, selecione um endereço para visualizar {activeTab === 'schedules' ? 'as agendas' : 'os agendamentos'}
-              </p>
-            )}
+            <div className="space-y-2">
+              <select
+                value={selectedAddressId || ''}
+                onChange={(e) => setSelectedAddressId(e.target.value || null)}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-800 text-sm sm:text-base min-h-[40px] sm:min-h-[48px] break-words"
+              >
+                <option value="" className="text-slate-500">Selecione um endereço...</option>
+                {addresses.filter(addr => addr.isActive).map((addr) => (
+                  <option key={addr._id} value={addr._id} className="text-slate-800">
+                    {addr.address.length > 50 ? `${addr.address.substring(0, 47)}...` : addr.address}
+                  </option>
+                ))}
+              </select>
+              {!selectedAddressId && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-xs sm:text-sm text-amber-700 leading-relaxed break-words">
+                    Por favor, selecione um endereço para visualizar {activeTab === 'schedules' ? 'as agendas' : 'os agendamentos'}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

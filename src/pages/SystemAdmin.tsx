@@ -631,52 +631,58 @@ const UsersManagement = () => {
           </DialogHeader>
           
           {selectedUser && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Usuário: {selectedUser.fullName}
-                </label>
-                <label className="text-xs text-slate-500">
-                  E-mail: {selectedUser.email}
-                </label>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="space-y-2">
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <label className="text-sm sm:text-base font-medium text-slate-700 block break-words leading-relaxed">
+                    Usuário: {selectedUser.fullName}
+                  </label>
+                  <label className="text-xs sm:text-sm text-slate-500 block mt-1 break-words">
+                    E-mail: {selectedUser.email}
+                  </label>
+                </div>
               </div>
               
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
+              <div className="space-y-2">
+                <label className="text-sm sm:text-base font-medium text-slate-700 block">
                   Status
                 </label>
-                <Select 
-                  value={editData.accepted ? 'ativo' : 'inativo'} 
-                  onValueChange={(value) => setEditData(prev => ({ ...prev, accepted: value === 'ativo' }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ativo">Ativo</SelectItem>
-                    <SelectItem value="inativo">Inativo</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="w-full">
+                  <Select 
+                    value={editData.accepted ? 'ativo' : 'inativo'} 
+                    onValueChange={(value) => setEditData(prev => ({ ...prev, accepted: value === 'ativo' }))}
+                  >
+                    <SelectTrigger className="w-full min-h-[44px] text-sm sm:text-base">
+                      <SelectValue className="break-words" />
+                    </SelectTrigger>
+                    <SelectContent className="w-full min-w-[200px]">
+                      <SelectItem value="ativo" className="text-sm sm:text-base">Ativo</SelectItem>
+                      <SelectItem value="inativo" className="text-sm sm:text-base">Inativo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
+              <div className="space-y-2">
+                <label className="text-sm sm:text-base font-medium text-slate-700 block">
                   Plano
                 </label>
-                <Select 
-                  value={editData.plan} 
-                  onValueChange={(value) => setEditData(prev => ({ ...prev, plan: value as PlanType }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="demo">Demo (Gratuito)</SelectItem>
-                    <SelectItem value="basic">Básico (R$ 67/mês)</SelectItem>
-                    <SelectItem value="professional">Profissional (R$ 99/mês)</SelectItem>
-                    <SelectItem value="enterprise">Empresarial (R$ 159/mês)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="w-full">
+                  <Select 
+                    value={editData.plan} 
+                    onValueChange={(value) => setEditData(prev => ({ ...prev, plan: value as PlanType }))}
+                  >
+                    <SelectTrigger className="w-full min-h-[44px] text-sm sm:text-base">
+                      <SelectValue className="break-words" />
+                    </SelectTrigger>
+                    <SelectContent className="w-full min-w-[220px] max-w-[90vw]">
+                      <SelectItem value="demo" className="text-sm sm:text-base py-2">Demo (Gratuito)</SelectItem>
+                      <SelectItem value="basic" className="text-sm sm:text-base py-2">Básico (R$ 67/mês)</SelectItem>
+                      <SelectItem value="professional" className="text-sm sm:text-base py-2">Profissional (R$ 99/mês)</SelectItem>
+                      <SelectItem value="enterprise" className="text-sm sm:text-base py-2">Empresarial (R$ 159/mês)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
