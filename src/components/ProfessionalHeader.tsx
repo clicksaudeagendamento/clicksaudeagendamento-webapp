@@ -271,7 +271,7 @@ export const ProfessionalHeader = () => {
            }}>
         <p className="text-center sm:text-left text-sm sm:text-base" 
            style={{ color: profile.primaryColor }}>
-          Agende sua consulta de forma rápida e prática.  ário de sua preferência.
+          Agende sua consulta de forma rápida e prática. Selecione o dia e horário de sua preferência.
         </p>
       </div>
     </div>
