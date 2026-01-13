@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Save, User, Camera, Crown, Calendar, MapPin, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,7 +65,7 @@ export const AdminProfile = () => {
   };
 
   // Function to fetch usage data
-  const fetchUsageData = async () => {
+  const fetchUsageData = useCallback(async () => {
     try {
       setLoadingUsage(true);
       const token = localStorage.getItem('access_token');
@@ -100,7 +100,7 @@ export const AdminProfile = () => {
     } finally {
       setLoadingUsage(false);
     }
-  };
+  }, [addresses.length]);
 
   // Helper function to format plan name
   const formatPlanName = (planType: PlanType) => {
@@ -155,7 +155,7 @@ export const AdminProfile = () => {
     };
 
     loadUserProfile();
-  }, [fetchUserProfile]);
+  }, [fetchUsageData]); // Only depends on fetchUsageData which is now memoized
 
   // Update usage when addresses change
   useEffect(() => {
@@ -168,7 +168,7 @@ export const AdminProfile = () => {
         }
       } : null);
     }
-  }, [addresses.length, userPlanInfo]);
+  }, [addresses.length]); // Remove userPlanInfo from dependencies to prevent infinite loop
 
   // Sync formData with profile if profile changes (e.g. after cancel)
   useEffect(() => {
