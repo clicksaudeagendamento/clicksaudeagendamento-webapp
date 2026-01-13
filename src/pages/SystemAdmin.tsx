@@ -80,8 +80,12 @@ export const SystemAdmin = () => {
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1" />
-              <span className="block text-xs sm:text-sm">Dashboard</span>
+              <BarChart3 className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+                activeTab === 'dashboard' ? 'text-white' : 'text-slate-600'
+              }`} />
+              <span className={`block text-xs sm:text-sm ${
+                activeTab === 'dashboard' ? 'text-white' : 'text-slate-600'
+              }`}>Dashboard</span>
             </button>
             <button
               onClick={() => setActiveTab('users')}
@@ -91,8 +95,12 @@ export const SystemAdmin = () => {
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Users className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1" />
-              <span className="block text-xs sm:text-sm">Usuários</span>
+              <Users className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+                activeTab === 'users' ? 'text-white' : 'text-slate-600'
+              }`} />
+              <span className={`block text-xs sm:text-sm ${
+                activeTab === 'users' ? 'text-white' : 'text-slate-600'
+              }`}>Usuários</span>
             </button>
             <button
               onClick={() => setActiveTab('whatsapp')}
@@ -102,8 +110,12 @@ export const SystemAdmin = () => {
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1" />
-              <span className="block text-xs sm:text-sm">WhatsApp</span>
+              <MessageCircle className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+                activeTab === 'whatsapp' ? 'text-white' : 'text-slate-600'
+              }`} />
+              <span className={`block text-xs sm:text-sm ${
+                activeTab === 'whatsapp' ? 'text-white' : 'text-slate-600'
+              }`}>WhatsApp</span>
             </button>
             <button
               onClick={() => setActiveTab('settings')}
@@ -113,8 +125,12 @@ export const SystemAdmin = () => {
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Settings className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1" />
-              <span className="block text-xs sm:text-sm">Configurações</span>
+              <Settings className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+                activeTab === 'settings' ? 'text-white' : 'text-slate-600'
+              }`} />
+              <span className={`block text-xs sm:text-sm ${
+                activeTab === 'settings' ? 'text-white' : 'text-slate-600'
+              }`}>Configurações</span>
             </button>
           </div>
         </div>
