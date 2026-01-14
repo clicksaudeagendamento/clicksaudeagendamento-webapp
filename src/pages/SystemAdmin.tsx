@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useEffect, useCallback } from "react";
-import { Users, BarChart3, Settings, MessageCircle, Edit, Trash2, X, Search, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { Users, BarChart3, Settings, MessageCircle, Edit, Trash2, X, Search, ChevronLeft, ChevronRight, ExternalLink, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { AdminLogin } from "@/components/admin/AdminLogin";
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 
-type SystemAdminTab = 'dashboard' | 'users' | 'whatsapp' | 'settings';
+type SystemAdminTab = 'dashboard' | 'users' | 'whatsapp' | 'financial';
 
 export const SystemAdmin = () => {
   const navigate = useNavigate();
@@ -45,8 +45,8 @@ export const SystemAdmin = () => {
         return <UsersManagement />;
       case 'whatsapp':
         return <WhatsAppManagement />;
-      case 'settings':
-        return <SystemSettings />;
+      case 'financial':
+        return <FinancialManagement />;
       default:
         return <SystemDashboard />;
     }
@@ -125,19 +125,19 @@ export const SystemAdmin = () => {
               }`}>WhatsApp</span>
             </button>
             <button
-              onClick={() => setActiveTab('settings')}
+              onClick={() => setActiveTab('financial')}
               className={`py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-medium rounded-r-xl transition-colors ${
-                activeTab === 'settings'
+                activeTab === 'financial'
                   ? 'bg-primary text-white'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Settings className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
-                activeTab === 'settings' ? 'text-white' : 'text-slate-600'
+              <DollarSign className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 ${
+                activeTab === 'financial' ? 'text-white' : 'text-slate-600'
               }`} />
               <span className={`block text-xs sm:text-sm ${
-                activeTab === 'settings' ? 'text-white' : 'text-slate-600'
-              }`}>Configurações</span>
+                activeTab === 'financial' ? 'text-white' : 'text-slate-600'
+              }`}>Financeiro</span>
             </button>
           </div>
         </div>
@@ -763,6 +763,42 @@ const UsersManagement = () => {
 
 const WhatsAppManagement = () => (
   <div className="space-y-6">
+    {/* Configurações do Sistema */}
+    <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+      <h2 className="text-xl font-bold text-slate-800 mb-4">Configurações do Sistema</h2>
+      <div className="space-y-6">
+        <div>
+          <h3 className="font-semibold text-slate-800 mb-3">Conexão WhatsApp</h3>
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="font-medium text-green-800">WhatsApp Conectado</span>
+            </div>
+            <p className="text-sm text-green-600">Número: +55 11 99999-9999</p>
+            <p className="text-sm text-green-600">Status: Online</p>
+          </div>
+        </div>
+        <div>
+          <h3 className="font-semibold text-slate-800 mb-3">Configurações Gerais</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              <span className="text-slate-700">Envio automático de lembretes</span>
+              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">Ativo</span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              <span className="text-slate-700">Confirmação de agendamentos</span>
+              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">Ativo</span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              <span className="text-slate-700">Notificações para profissionais</span>
+              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">Ativo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Gestão de WhatsApp */}
     <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
       <h2 className="text-xl font-bold text-slate-800 mb-4">Gestão de WhatsApp</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -805,37 +841,132 @@ const WhatsAppManagement = () => (
   </div>
 );
 
-const SystemSettings = () => (
-  <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
-    <h2 className="text-xl font-bold text-slate-800 mb-4">Configurações do Sistema</h2>
-    <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold text-slate-800 mb-3">Conexão WhatsApp</h3>
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="font-medium text-green-800">WhatsApp Conectado</span>
-          </div>
-          <p className="text-sm text-green-600">Número: +55 11 99999-9999</p>
-          <p className="text-sm text-green-600">Status: Online</p>
+const FinancialManagement = () => (
+  <div className="space-y-6">
+    {/* Resumo Financeiro */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+        <div className="bg-green-50 p-4 rounded-lg">
+          <h3 className="font-semibold text-green-800">Receita Total</h3>
+          <p className="text-2xl font-bold text-green-600">R$ 15.720,00</p>
+          <p className="text-sm text-green-600">Este mês</p>
         </div>
       </div>
-      <div>
-        <h3 className="font-semibold text-slate-800 mb-3">Configurações Gerais</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-            <span className="text-slate-700">Envio automático de lembretes</span>
-            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">Ativo</span>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-            <span className="text-slate-700">Confirmação de agendamentos</span>
-            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">Ativo</span>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-            <span className="text-slate-700">Notificações para profissionais</span>
-            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">Ativo</span>
-          </div>
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <h3 className="font-semibold text-blue-800">Assinantes Ativos</h3>
+          <p className="text-2xl font-bold text-blue-600">142</p>
+          <p className="text-sm text-blue-600">Crescimento de +8%</p>
         </div>
+      </div>
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <h3 className="font-semibold text-purple-800">Ticket Médio</h3>
+          <p className="text-2xl font-bold text-purple-600">R$ 110,70</p>
+          <p className="text-sm text-purple-600">Por profissional</p>
+        </div>
+      </div>
+    </div>
+
+    {/* Planos e Assinaturas */}
+    <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+      <h2 className="text-xl font-bold text-slate-800 mb-4">Distribuição por Planos</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h3 className="font-semibold text-gray-800">Demo (Gratuito)</h3>
+          <p className="text-xl font-bold text-gray-600">28</p>
+          <p className="text-sm text-gray-500">Profissionais</p>
+        </div>
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h3 className="font-semibold text-blue-800">Básico</h3>
+          <p className="text-xl font-bold text-blue-600">45</p>
+          <p className="text-sm text-blue-500">R$ 67/mês cada</p>
+        </div>
+        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+          <h3 className="font-semibold text-green-800">Profissional</h3>
+          <p className="text-xl font-bold text-green-600">52</p>
+          <p className="text-sm text-green-500">R$ 99/mês cada</p>
+        </div>
+        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <h3 className="font-semibold text-purple-800">Empresarial</h3>
+          <p className="text-xl font-bold text-purple-600">17</p>
+          <p className="text-sm text-purple-500">R$ 159/mês cada</p>
+        </div>
+      </div>
+    </div>
+
+    {/* Transações Recentes */}
+    <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+      <h2 className="text-xl font-bold text-slate-800 mb-4">Transações Recentes</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-slate-200">
+              <th className="pb-3 text-sm font-semibold text-slate-700">Data</th>
+              <th className="pb-3 text-sm font-semibold text-slate-700">Profissional</th>
+              <th className="pb-3 text-sm font-semibold text-slate-700">Plano</th>
+              <th className="pb-3 text-sm font-semibold text-slate-700">Valor</th>
+              <th className="pb-3 text-sm font-semibold text-slate-700">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-slate-100 hover:bg-slate-50">
+              <td className="py-3 text-sm text-slate-800">14/01/2026</td>
+              <td className="py-3 text-sm text-slate-800">Dr. João Silva</td>
+              <td className="py-3 text-sm text-slate-600">Profissional</td>
+              <td className="py-3 text-sm text-slate-800 font-medium">R$ 99,00</td>
+              <td className="py-3">
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  Pago
+                </span>
+              </td>
+            </tr>
+            <tr className="border-b border-slate-100 hover:bg-slate-50">
+              <td className="py-3 text-sm text-slate-800">14/01/2026</td>
+              <td className="py-3 text-sm text-slate-800">Dra. Maria Santos</td>
+              <td className="py-3 text-sm text-slate-600">Empresarial</td>
+              <td className="py-3 text-sm text-slate-800 font-medium">R$ 159,00</td>
+              <td className="py-3">
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  Pago
+                </span>
+              </td>
+            </tr>
+            <tr className="border-b border-slate-100 hover:bg-slate-50">
+              <td className="py-3 text-sm text-slate-800">13/01/2026</td>
+              <td className="py-3 text-sm text-slate-800">Dr. Pedro Costa</td>
+              <td className="py-3 text-sm text-slate-600">Básico</td>
+              <td className="py-3 text-sm text-slate-800 font-medium">R$ 67,00</td>
+              <td className="py-3">
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                  Pendente
+                </span>
+              </td>
+            </tr>
+            <tr className="border-b border-slate-100 hover:bg-slate-50">
+              <td className="py-3 text-sm text-slate-800">13/01/2026</td>
+              <td className="py-3 text-sm text-slate-800">Dra. Ana Oliveira</td>
+              <td className="py-3 text-sm text-slate-600">Profissional</td>
+              <td className="py-3 text-sm text-slate-800 font-medium">R$ 99,00</td>
+              <td className="py-3">
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  Pago
+                </span>
+              </td>
+            </tr>
+            <tr className="border-b border-slate-100 hover:bg-slate-50">
+              <td className="py-3 text-sm text-slate-800">12/01/2026</td>
+              <td className="py-3 text-sm text-slate-800">Dr. Carlos Mendes</td>
+              <td className="py-3 text-sm text-slate-600">Básico</td>
+              <td className="py-3 text-sm text-slate-800 font-medium">R$ 67,00</td>
+              <td className="py-3">
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  Pago
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
